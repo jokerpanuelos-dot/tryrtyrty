@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flashcard Battle — Vlad vs Rcy</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0f;
+  --card:#16161a;
+  --border:#2a2a2e;
+  --vlad:#ff4d6d;
+  --rcy:#4dc8ff;
+  --gold:#ffd166;
+  --text:#f0f0f0;
+  --muted:#666;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:1.5rem 1rem 3rem;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,77,109,0.08), transparent 60%),
+             radial-gradient(ellipse 80% 50% at 50% 110%, rgba(77,200,255,0.08), transparent 60%);
+  pointer-events:none;z-index:0;
+}
+
+/* HEADER */
+header{
+  position:relative;z-index:1;
+  width:100%;max-width:700px;
+  text-align:center;
+  margin-bottom:1.5rem;
+}
+.title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.5rem,8vw,4.5rem);
+  letter-spacing:0.05em;
+  line-height:1;
+  color:#fff;
+}
+.title .vs{color:var(--gold);font-size:0.7em;margin:0 0.2em;}
+.subtitle{font-size:0.75rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-top:0.4rem;}
+
+/* SCOREBOARD */
+.scoreboard{
+  position:relative;z-index:1;
+  display:flex;align-items:center;gap:1rem;
+  width:100%;max-width:700px;
+  margin-bottom:1.5rem;
+}
+.player{
+  flex:1;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:0.9rem 1rem;
+  text-align:center;
+  transition:transform 0.2s,border-color 0.2s;
+}
+.player.active-player{transform:translateY(-3px);}
+.player.vlad-active{border-color:var(--vlad);box-shadow:0 0 20px rgba(255,77,109,0.2);}
+.player.rcy-active{border-color:var(--rcy);box-shadow:0 0 20px rgba(77,200,255,0.2);}
+.player-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.1em;}
+.vlad .player-name{color:var(--vlad);}
+.rcy  .player-name{color:var(--rcy);}
+.player-score{font-size:2.2rem;font-weight:700;line-height:1.1;}
+.player-streak{font-size:0.7rem;color:var(--muted);margin-top:0.2rem;}
+
+.vs-badge{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.2rem;color:var(--gold);
+  padding:0.4rem 0.6rem;
+  border:1px solid var(--gold);
+  border-radius:8px;
+  opacity:0.7;
+}
+
+/* ROUND */
+.round-info{
+  position:relative;z-index:1;
+  font-size:0.72rem;color:var(--muted);
+  letter-spacing:0.15em;text-transform:uppercase;
+  margin-bottom:1rem;
+}
+
+/* FLASHCARD */
+.card-wrap{
+  position:relative;z-index:1;
+  width:100%;max-width:700px;
+  perspective:1200px;
+  margin-bottom:1.5rem;
+}
+.card{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:2.5rem 2rem;
+  min-height:180px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  cursor:pointer;
+  transition:transform 0.15s,border-color 0.2s,box-shadow 0.2s;
+  position:relative;overflow:hidden;
+}
+.card:hover{transform:translateY(-2px);}
+.card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.02),transparent);
+  pointer-events:none;
+}
+.card-hint{font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;}
+.card-question{font-size:clamp(1.1rem,3vw,1.5rem);font-weight:600;line-height:1.4;color:#fff;}
+.card-answer{
+  font-size:clamp(1rem,2.5vw,1.3rem);font-weight:600;
+  color:var(--gold);line-height:1.4;
+  display:none;
+}
+.card.revealed .card-question{font-size:0.85rem;color:var(--muted);margin-bottom:0.8rem;}
+.card.revealed .card-answer{display:block;}
+.card.revealed{border-color:var(--gold);box-shadow:0 0 24px rgba(255,209,102,0.1);}
+.card-tag{
+  position:absolute;top:1rem;right:1rem;
+  font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--muted);
+  background:var(--bg);
+  padding:0.2rem 0.5rem;border-radius:4px;
+}
+
+/* BUZZ BUTTONS */
+.buzz-row{
+  position:relative;z-index:1;
+  display:flex;gap:1rem;width:100%;max-width:700px;
+  margin-bottom:1rem;
+}
+.buzz-btn{
+  flex:1;padding:1rem;
+  border:none;border-radius:12px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.3rem;letter-spacing:0.1em;
+  cursor:pointer;
+  transition:transform 0.1s,opacity 0.2s,box-shadow 0.2s;
+  position:relative;overflow:hidden;
+}
+.buzz-btn:active{transform:scale(0.97);}
+.buzz-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.buzz-vlad{background:var(--vlad);color:#fff;}
+.buzz-vlad:not(:disabled):hover{box-shadow:0 4px 20px rgba(255,77,109,0.4);}
+.buzz-rcy{background:var(--rcy);color:#0d0d0f;}
+.buzz-rcy:not(:disabled):hover{box-shadow:0 4px 20px rgba(77,200,255,0.4);}
+
+/* JUDGE ROW */
+.judge-row{
+  position:relative;z-index:1;
+  display:flex;gap:0.75rem;width:100%;max-width:700px;
+  margin-bottom:1.5rem;
+  display:none;
+}
+.judge-row.visible{display:flex;}
+.judge-btn{
+  flex:1;padding:0.7rem;
+  border-radius:10px;border:1px solid var(--border);
+  background:var(--card);
+  font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;
+  cursor:pointer;color:var(--text);
+  transition:background 0.15s,border-color 0.15s;
+}
+.judge-correct{border-color:#2ecc71;}
+.judge-correct:hover{background:#2ecc71;color:#000;}
+.judge-wrong{border-color:#e74c3c;}
+.judge-wrong:hover{background:#e74c3c;color:#fff;}
+
+/* CONTROLS */
+.controls{
+  position:relative;z-index:1;
+  display:flex;gap:0.75rem;width:100%;max-width:700px;
+}
+.ctrl-btn{
+  flex:1;padding:0.75rem;
+  border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);
+  font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;
+  cursor:pointer;letter-spacing:0.05em;
+  transition:border-color 0.15s,color 0.15s;
+}
+.ctrl-btn:hover{border-color:var(--text);color:var(--text);}
+
+/* BUZZER INDICATOR */
+.buzzer-status{
+  position:relative;z-index:1;
+  font-size:0.8rem;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;
+  min-height:1.5rem;
+  margin-bottom:0.5rem;
+  text-align:center;
+}
+.buzzer-status.vlad-buzz{color:var(--vlad);}
+.buzzer-status.rcy-buzz{color:var(--rcy);}
+
+/* WINNER MODAL */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.85);
+  display:none;align-items:center;justify-content:center;
+  z-index:100;
+}
+.modal-overlay.show{display:flex;}
+.modal{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:3rem 2rem;
+  text-align:center;
+  max-width:400px;width:90%;
+  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.modal-crown{font-size:3rem;margin-bottom:0.5rem;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.2em;color:var(--muted);margin-bottom:0.5rem;}
+.modal-winner{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:1;margin-bottom:1.5rem;}
+.modal-scores{font-size:0.85rem;color:var(--muted);margin-bottom:2rem;line-height:2;}
+.modal-restart{
+  background:var(--gold);color:#0d0d0f;
+  border:none;border-radius:10px;
+  padding:0.9rem 2rem;
+  font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;
+  cursor:pointer;transition:opacity 0.15s;
+}
+.modal-restart:hover{opacity:0.85;}
+@keyframes popIn{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title">
+    <span style="color:var(--vlad)">VLAD</span>
+    <span class="vs">VS</span>
+    <span style="color:var(--rcy)">RCY</span>
+  </div>
+  <p class="subtitle">Flashcard Battle · First to 7 wins</p>
+</header>
+
+<div class="scoreboard">
+  <div class="player vlad" id="pVlad">
+    <div class="player-name">Vlad</div>
+    <div class="player-score" id="scoreVlad">0</div>
+    <div class="player-streak" id="streakVlad">—</div>
+  </div>
+  <div class="vs-badge">VS</div>
+  <div class="player rcy" id="pRcy">
+    <div class="player-name">Rcy</div>
+    <div class="player-score" id="scoreRcy">0</div>
+    <div class="player-streak" id="streakRcy">—</div>
+  </div>
+</div>
+
+<div class="round-info" id="roundInfo">Round 1</div>
+
+<div class="card-wrap">
+  <div class="card" id="flashcard" onclick="revealAnswer()">
+    <div class="card-tag" id="cardTag">General</div>
+    <div class="card-hint" id="cardHint">Click to reveal answer</div>
+    <div class="card-question" id="cardQuestion">Loading...</div>
+    <div class="card-answer" id="cardAnswer"></div>
+  </div>
+</div>
+
+<div class="buzzer-status" id="buzzerStatus"></div>
+
+<div class="buzz-row">
+  <button class="buzz-btn buzz-vlad" id="btnVlad" onclick="buzz('vlad')">⚡ VLAD</button>
+  <button class="buzz-btn buzz-rcy"  id="btnRcy"  onclick="buzz('rcy')">⚡ RCY</button>
+</div>
+
+<div class="judge-row" id="judgeRow">
+  <button class="judge-btn judge-correct" onclick="judge(true)">✓ Correct</button>
+  <button class="judge-btn judge-wrong"   onclick="judge(false)">✗ Wrong</button>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="skipCard()">Skip</button>
+  <button class="ctrl-btn" onclick="resetGame()">Reset</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-crown">👑</div>
+    <div class="modal-title">Winner</div>
+    <div class="modal-winner" id="modalWinner"></div>
+    <div class="modal-scores" id="modalScores"></div>
+    <button class="modal-restart" onclick="resetGame()">Play Again</button>
+  </div>
+</div>
+
+<script>
+const cards = [
+  {q:"What is the capital of Japan?", a:"Tokyo", tag:"Geography"},
+  {q:"How many sides does a hexagon have?", a:"6", tag:"Math"},
+  {q:"What gas do plants absorb from the air?", a:"Carbon Dioxide (CO₂)", tag:"Science"},
+  {q:"Who wrote Romeo and Juliet?", a:"William Shakespeare", tag:"Literature"},
+  {q:"What is the speed of light (approx)?", a:"300,000 km/s", tag:"Physics"},
+  {q:"What planet is known as the Red Planet?", a:"Mars", tag:"Astronomy"},
+  {q:"What is 12 × 12?", a:"144", tag:"Math"},
+  {q:"What language does 'Merci' come from?", a:"French", tag:"Language"},
+  {q:"How many bones in the adult human body?", a:"206", tag:"Biology"},
+  {q:"What is the chemical symbol for Gold?", a:"Au", tag:"Chemistry"},
+  {q:"What year did World War II end?", a:"1945", tag:"History"},
+  {q:"What is the largest ocean on Earth?", a:"Pacific Ocean", tag:"Geography"},
+  {q:"Who painted the Mona Lisa?", a:"Leonardo da Vinci", tag:"Art"},
+  {q:"What is the powerhouse of the cell?", a:"Mitochondria", tag:"Biology"},
+  {q:"What does HTML stand for?", a:"HyperText Markup Language", tag:"Tech"},
+  {q:"What is the square root of 144?", a:"12", tag:"Math"},
+  {q:"What country invented pizza?", a:"Italy", tag:"Food"},
+  {q:"What is the longest river in the world?", a:"The Nile", tag:"Geography"},
+  {q:"What is 2 to the power of 10?", a:"1024", tag:"Math"},
+  {q:"What does CPU stand for?", a:"Central Processing Unit", tag:"Tech"},
+];
+
+let deck = [], round = 1, currentCard = null;
+let scores = {vlad:0, rcy:0};
+let streaks = {vlad:0, rcy:0};
+let buzzed = null, revealed = false;
+const WIN = 7;
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5);}
+
+function initDeck(){
+  deck = shuffle(cards);
+}
+
+function nextCard(){
+  if(deck.length === 0) initDeck();
+  currentCard = deck.pop();
+  revealed = false; buzzed = null;
+  const fc = document.getElementById('flashcard');
+  fc.classList.remove('revealed');
+  document.getElementById('cardQuestion').textContent = currentCard.q;
+  document.getElementById('cardAnswer').textContent = currentCard.a;
+  document.getElementById('cardTag').textContent = currentCard.tag;
+  document.getElementById('cardHint').textContent = 'Tap to reveal answer';
+  document.getElementById('buzzerStatus').textContent = '';
+  document.getElementById('buzzerStatus').className = 'buzzer-status';
+  document.getElementById('judgeRow').classList.remove('visible');
+  document.getElementById('btnVlad').disabled = false;
+  document.getElementById('btnRcy').disabled  = false;
+  document.getElementById('roundInfo').textContent = `Round ${round}`;
+  updateScoreboard();
+}
+
+function revealAnswer(){
+  if(revealed) return;
+  revealed = true;
+  document.getElementById('flashcard').classList.add('revealed');
+  document.getElementById('cardHint').textContent = 'Answer:';
+  if(buzzed){
+    document.getElementById('judgeRow').classList.add('visible');
+  }
+}
+
+function buzz(who){
+  if(buzzed) return;
+  buzzed = who;
+  document.getElementById('btnVlad').disabled = true;
+  document.getElementById('btnRcy').disabled  = true;
+  const status = document.getElementById('buzzerStatus');
+  status.textContent = (who === 'vlad' ? '⚡ VLAD buzzed in!' : '⚡ RCY buzzed in!');
+  status.className = 'buzzer-status ' + (who === 'vlad' ? 'vlad-buzz' : 'rcy-buzz');
+  if(revealed){
+    document.getElementById('judgeRow').classList.add('visible');
+  }
+}
+
+function judge(correct){
+  if(!buzzed) return;
+  if(correct){
+    scores[buzzed]++;
+    streaks[buzzed]++;
+    streaks[buzzed === 'vlad' ? 'rcy' : 'vlad'] = 0;
+  } else {
+    streaks[buzzed] = 0;
+  }
+  round++;
+  updateScoreboard();
+  if(scores[buzzed] >= WIN && correct){
+    showWinner(buzzed);
+    return;
+  }
+  setTimeout(nextCard, 400);
+}
+
+function skipCard(){
+  round++;
+  setTimeout(nextCard, 200);
+}
+
+function updateScoreboard(){
+  document.getElementById('scoreVlad').textContent = scores.vlad;
+  document.getElementById('scoreRcy').textContent  = scores.rcy;
+  document.getElementById('streakVlad').textContent = streaks.vlad > 1 ? `🔥 ${streaks.vlad} streak` : '—';
+  document.getElementById('streakRcy').textContent  = streaks.rcy  > 1 ? `🔥 ${streaks.rcy} streak`  : '—';
+  const pv = document.getElementById('pVlad');
+  const pr = document.getElementById('pRcy');
+  pv.className = 'player vlad' + (buzzed === 'vlad' ? ' active-player vlad-active' : '');
+  pr.className = 'player rcy'  + (buzzed === 'rcy'  ? ' active-player rcy-active'  : '');
+}
+
+function showWinner(who){
+  document.getElementById('modalWinner').textContent = who.toUpperCase();
+  document.getElementById('modalWinner').style.color = who === 'vlad' ? 'var(--vlad)' : 'var(--rcy)';
+  document.getElementById('modalScores').innerHTML =
+    `<span style="color:var(--vlad)">Vlad: ${scores.vlad}</span> &nbsp;·&nbsp; <span style="color:var(--rcy)">Rcy: ${scores.rcy}</span><br/>Rounds played: ${round-1}`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function resetGame(){
+  scores = {vlad:0,rcy:0};
+  streaks = {vlad:0,rcy:0};
+  round = 1; buzzed = null; revealed = false;
+  document.getElementById('modal').classList.remove('show');
+  initDeck();
+  nextCard();
+}
+
+initDeck();
+nextCard();
+</script>
+</body>
+</html>
