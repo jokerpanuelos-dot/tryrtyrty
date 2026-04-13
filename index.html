@@ -1,442 +1,1330 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Flashcard Battle — Vlad vs Rcy</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercy vs Vladimir — Battle Station</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d0d0f;
-  --card:#16161a;
-  --border:#2a2a2e;
-  --vlad:#ff4d6d;
-  --rcy:#4dc8ff;
-  --gold:#ffd166;
-  --text:#f0f0f0;
-  --muted:#666;
-}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Outfit',sans-serif;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:1.5rem 1rem 3rem;
-  position:relative;
-  overflow-x:hidden;
-}
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,77,109,0.08), transparent 60%),
-             radial-gradient(ellipse 80% 50% at 50% 110%, rgba(77,200,255,0.08), transparent 60%);
-  pointer-events:none;z-index:0;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0C0D12;
+  --bg2:       #13141C;
+  --bg3:       #1A1B26;
+  --panel:     #1E1F2E;
+  --border:    rgba(255,255,255,0.07);
+
+  --mercy-h:   #2ECC8E;
+  --mercy-m:   #1AB37A;
+  --mercy-d:   #0D7A52;
+  --mercy-glow: rgba(46,204,142,0.25);
+  --mercy-bg:  rgba(46,204,142,0.06);
+
+  --vlad-h:    #E8442A;
+  --vlad-m:    #C73520;
+  --vlad-d:    #8B2010;
+  --vlad-glow: rgba(232,68,42,0.25);
+  --vlad-bg:   rgba(232,68,42,0.06);
+
+  --gold:      #D4A847;
+  --gold-l:    #F0C96A;
+  --silver:    #A8B2C0;
+  --white:     #EEF0F5;
+  --muted:     #5A5F72;
+  --text:      #CDD0DC;
+
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 24px;
 }
 
-/* HEADER */
-header{
-  position:relative;z-index:1;
-  width:100%;max-width:700px;
-  text-align:center;
-  margin-bottom:1.5rem;
-}
-.title{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(2.5rem,8vw,4.5rem);
-  letter-spacing:0.05em;
-  line-height:1;
-  color:#fff;
-}
-.title .vs{color:var(--gold);font-size:0.7em;margin:0 0.2em;}
-.subtitle{font-size:0.75rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-top:0.4rem;}
-
-/* SCOREBOARD */
-.scoreboard{
-  position:relative;z-index:1;
-  display:flex;align-items:center;gap:1rem;
-  width:100%;max-width:700px;
-  margin-bottom:1.5rem;
-}
-.player{
-  flex:1;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:0.9rem 1rem;
-  text-align:center;
-  transition:transform 0.2s,border-color 0.2s;
-}
-.player.active-player{transform:translateY(-3px);}
-.player.vlad-active{border-color:var(--vlad);box-shadow:0 0 20px rgba(255,77,109,0.2);}
-.player.rcy-active{border-color:var(--rcy);box-shadow:0 0 20px rgba(77,200,255,0.2);}
-.player-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.1em;}
-.vlad .player-name{color:var(--vlad);}
-.rcy  .player-name{color:var(--rcy);}
-.player-score{font-size:2.2rem;font-weight:700;line-height:1.1;}
-.player-streak{font-size:0.7rem;color:var(--muted);margin-top:0.2rem;}
-
-.vs-badge{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:1.2rem;color:var(--gold);
-  padding:0.4rem 0.6rem;
-  border:1px solid var(--gold);
-  border-radius:8px;
-  opacity:0.7;
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* ROUND */
-.round-info{
-  position:relative;z-index:1;
-  font-size:0.72rem;color:var(--muted);
-  letter-spacing:0.15em;text-transform:uppercase;
-  margin-bottom:1rem;
+/* ── ATMOSPHERIC BG ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 45% at 0% 50%, rgba(46,204,142,0.055) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 45% at 100% 50%, rgba(232,68,42,0.055) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 0%, rgba(212,168,71,0.04) 0%, transparent 60%);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.8' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
-/* FLASHCARD */
-.card-wrap{
-  position:relative;z-index:1;
-  width:100%;max-width:700px;
-  perspective:1200px;
-  margin-bottom:1.5rem;
+.page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 14px 60px; }
+
+/* ── HEADER ── */
+header {
+  text-align: center;
+  padding: 32px 16px 20px;
 }
-.card{
-  width:100%;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:2.5rem 2rem;
-  min-height:180px;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center;
-  cursor:pointer;
-  transition:transform 0.15s,border-color 0.2s,box-shadow 0.2s;
-  position:relative;overflow:hidden;
+.header-ornament {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.5em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
-.card:hover{transform:translateY(-2px);}
-.card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,0.02),transparent);
-  pointer-events:none;
+.header-ornament::before, .header-ornament::after {
+  content: '';
+  height: 1px;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, var(--gold));
 }
-.card-hint{font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;}
-.card-question{font-size:clamp(1.1rem,3vw,1.5rem);font-weight:600;line-height:1.4;color:#fff;}
-.card-answer{
-  font-size:clamp(1rem,2.5vw,1.3rem);font-weight:600;
-  color:var(--gold);line-height:1.4;
-  display:none;
+.header-ornament::after { transform: scaleX(-1); }
+
+h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.6rem, 4.5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  margin-bottom: 8px;
 }
-.card.revealed .card-question{font-size:0.85rem;color:var(--muted);margin-bottom:0.8rem;}
-.card.revealed .card-answer{display:block;}
-.card.revealed{border-color:var(--gold);box-shadow:0 0 24px rgba(255,209,102,0.1);}
-.card-tag{
-  position:absolute;top:1rem;right:1rem;
-  font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;
-  color:var(--muted);
-  background:var(--bg);
-  padding:0.2rem 0.5rem;border-radius:4px;
+h1 .mercy-name {
+  color: var(--mercy-h);
+  text-shadow: 0 0 30px var(--mercy-glow);
+}
+h1 .vlad-name {
+  color: var(--vlad-h);
+  text-shadow: 0 0 30px var(--vlad-glow);
+}
+h1 .vs-word {
+  color: var(--gold);
+  font-size: 0.7em;
+  text-shadow: 0 0 20px rgba(212,168,71,0.4);
+}
+.subtitle {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  letter-spacing: 0.1em;
 }
 
-/* BUZZ BUTTONS */
-.buzz-row{
-  position:relative;z-index:1;
-  display:flex;gap:1rem;width:100%;max-width:700px;
-  margin-bottom:1rem;
+/* ── TURN BANNER ── */
+.turn-banner {
+  margin: 14px 0;
+  padding: 10px 20px;
+  text-align: center;
+  border-radius: var(--r-md);
+  border: 1px solid;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
 }
-.buzz-btn{
-  flex:1;padding:1rem;
-  border:none;border-radius:12px;
-  font-family:'Bebas Neue',sans-serif;
-  font-size:1.3rem;letter-spacing:0.1em;
-  cursor:pointer;
-  transition:transform 0.1s,opacity 0.2s,box-shadow 0.2s;
-  position:relative;overflow:hidden;
+.turn-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: 0.06;
 }
-.buzz-btn:active{transform:scale(0.97);}
-.buzz-btn:disabled{opacity:0.3;cursor:not-allowed;}
-.buzz-vlad{background:var(--vlad);color:#fff;}
-.buzz-vlad:not(:disabled):hover{box-shadow:0 4px 20px rgba(255,77,109,0.4);}
-.buzz-rcy{background:var(--rcy);color:#0d0d0f;}
-.buzz-rcy:not(:disabled):hover{box-shadow:0 4px 20px rgba(77,200,255,0.4);}
+.turn-banner.mercy-turn {
+  border-color: var(--mercy-m);
+  color: var(--mercy-h);
+  background: var(--mercy-bg);
+  box-shadow: 0 0 20px var(--mercy-glow);
+}
+.turn-banner.vlad-turn {
+  border-color: var(--vlad-m);
+  color: var(--vlad-h);
+  background: var(--vlad-bg);
+  box-shadow: 0 0 20px var(--vlad-glow);
+}
+.turn-step {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+  margin-top: 3px;
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  text-transform: none;
+}
 
-/* JUDGE ROW */
-.judge-row{
-  position:relative;z-index:1;
-  display:flex;gap:0.75rem;width:100%;max-width:700px;
-  margin-bottom:1.5rem;
-  display:none;
+/* ── PHASE TRACK ── */
+.phase-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 16px;
 }
-.judge-row.visible{display:flex;}
-.judge-btn{
-  flex:1;padding:0.7rem;
-  border-radius:10px;border:1px solid var(--border);
-  background:var(--card);
-  font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;
-  cursor:pointer;color:var(--text);
-  transition:background 0.15s,border-color 0.15s;
+.phase-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 16px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  position: relative;
+  transition: color 0.3s;
+  cursor: default;
 }
-.judge-correct{border-color:#2ecc71;}
-.judge-correct:hover{background:#2ecc71;color:#000;}
-.judge-wrong{border-color:#e74c3c;}
-.judge-wrong:hover{background:#e74c3c;color:#fff;}
+.phase-node .p-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+  background: transparent;
+  transition: all 0.3s;
+}
+.phase-node.active { color: var(--gold); }
+.phase-node.active .p-dot {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(212,168,71,0.6);
+}
+.phase-connector {
+  width: 40px; height: 1px;
+  background: var(--border);
+}
 
-/* CONTROLS */
-.controls{
-  position:relative;z-index:1;
-  display:flex;gap:0.75rem;width:100%;max-width:700px;
+/* ── SCOREBOARD ── */
+.scoreboard {
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
 }
-.ctrl-btn{
-  flex:1;padding:0.75rem;
-  border-radius:10px;border:1px solid var(--border);
-  background:transparent;color:var(--muted);
-  font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;
-  cursor:pointer;letter-spacing:0.05em;
-  transition:border-color 0.15s,color 0.15s;
+.score-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px 18px;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
-.ctrl-btn:hover{border-color:var(--text);color:var(--text);}
+.score-card.mercy-active {
+  border-color: var(--mercy-m);
+  box-shadow: 0 0 18px var(--mercy-glow);
+}
+.score-card.vlad-active {
+  border-color: var(--vlad-m);
+  box-shadow: 0 0 18px var(--vlad-glow);
+}
+.score-card.mercy-side { border-left: 3px solid var(--mercy-d); }
+.score-card.vlad-side  { border-right: 3px solid var(--vlad-d); text-align: right; }
 
-/* BUZZER INDICATOR */
-.buzzer-status{
-  position:relative;z-index:1;
-  font-size:0.8rem;font-weight:600;
-  letter-spacing:0.1em;text-transform:uppercase;
-  min-height:1.5rem;
-  margin-bottom:0.5rem;
-  text-align:center;
+.score-hero-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.buzzer-status.vlad-buzz{color:var(--vlad);}
-.buzzer-status.rcy-buzz{color:var(--rcy);}
+.score-card.vlad-side .score-hero-name { justify-content: flex-end; }
+.hero-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.mercy-dot { background: var(--mercy-h); box-shadow: 0 0 6px var(--mercy-glow); }
+.vlad-dot  { background: var(--vlad-h);  box-shadow: 0 0 6px var(--vlad-glow); }
 
-/* WINNER MODAL */
-.modal-overlay{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,0.85);
-  display:none;align-items:center;justify-content:center;
-  z-index:100;
+.score-hp-num {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 8px;
 }
-.modal-overlay.show{display:flex;}
-.modal{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:3rem 2rem;
-  text-align:center;
-  max-width:400px;width:90%;
-  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+.mercy-side .score-hp-num { color: var(--mercy-h); }
+.vlad-side  .score-hp-num { color: var(--vlad-h); }
+
+.hp-rail { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.hp-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.hp-fill.mercy { background: linear-gradient(90deg, var(--mercy-d), var(--mercy-h)); }
+.hp-fill.vlad  { background: linear-gradient(90deg, var(--vlad-d), var(--vlad-h)); float: right; }
+
+.mana-pips { display: flex; gap: 4px; }
+.vlad-side .mana-pips { justify-content: flex-end; }
+.pip {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 1.5px solid; transition: all 0.2s;
 }
-.modal-crown{font-size:3rem;margin-bottom:0.5rem;}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.2em;color:var(--muted);margin-bottom:0.5rem;}
-.modal-winner{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:1;margin-bottom:1.5rem;}
-.modal-scores{font-size:0.85rem;color:var(--muted);margin-bottom:2rem;line-height:2;}
-.modal-restart{
-  background:var(--gold);color:#0d0d0f;
-  border:none;border-radius:10px;
-  padding:0.9rem 2rem;
-  font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;
-  cursor:pointer;transition:opacity 0.15s;
+.pip.mercy-pip { border-color: var(--mercy-d); }
+.pip.mercy-pip.lit { background: var(--mercy-h); border-color: var(--mercy-h); box-shadow: 0 0 5px var(--mercy-glow); }
+.pip.vlad-pip  { border-color: var(--vlad-d); }
+.pip.vlad-pip.lit  { background: var(--vlad-h);  border-color: var(--vlad-h);  box-shadow: 0 0 5px var(--vlad-glow); }
+
+.hand-count {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 5px;
+  font-style: italic;
 }
-.modal-restart:hover{opacity:0.85;}
-@keyframes popIn{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
+
+.vs-center { text-align: center; }
+.vs-glyph {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+  text-shadow: 0 0 16px rgba(212,168,71,0.5);
+  display: block;
+  margin-bottom: 4px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+.turn-num {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+}
+
+/* ── BATTLEFIELD ── */
+.bf-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 16px;
+  margin-bottom: 14px;
+  position: relative;
+}
+.bf-title {
+  position: absolute;
+  top: -11px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg2);
+  border: 1px solid var(--gold);
+  border-radius: 99px;
+  padding: 2px 20px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.battlefield {
+  display: grid;
+  grid-template-columns: 1fr 50px 1fr;
+  gap: 10px;
+  min-height: 150px;
+}
+.field-zone {
+  min-height: 130px;
+  border: 1px dashed rgba(255,255,255,0.08);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  position: relative;
+  transition: all 0.2s;
+}
+.field-zone.mercy-zone { border-color: rgba(46,204,142,0.2); background: rgba(46,204,142,0.02); }
+.field-zone.vlad-zone  { border-color: rgba(232,68,42,0.2);  background: rgba(232,68,42,0.02); }
+.field-zone.drop-ok {
+  border-style: solid;
+  border-color: var(--gold);
+  background: rgba(212,168,71,0.05);
+  box-shadow: inset 0 0 16px rgba(212,168,71,0.08);
+}
+.zone-hint {
+  position: absolute;
+  top: 8px; left: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.bf-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+/* ── FIELD MINI-CARD ── */
+.field-mini {
+  width: 78px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  border: 1px solid;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+  cursor: default;
+}
+.field-mini:hover { transform: translateY(-4px) scale(1.04); }
+.field-mini.m-mini { border-color: var(--mercy-m); }
+.field-mini.v-mini { border-color: var(--vlad-m); }
+.mini-art { height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.m-mini .mini-art { background: linear-gradient(135deg, var(--mercy-d) 0%, #1AB37A 100%); }
+.v-mini .mini-art { background: linear-gradient(135deg, var(--vlad-d) 0%, #C73520 100%); }
+.mini-name { padding: 3px 5px; font-size: 0.48rem; font-weight: 600; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--bg3); }
+.mini-stats { display: flex; justify-content: space-between; padding: 2px 5px 4px; background: var(--bg3); }
+.mini-stats span { font-family: 'Cinzel', serif; font-size: 0.48rem; }
+.ms-a { color: #FF7060; }
+.ms-d { color: #60A8FF; }
+
+/* ── HAND PANELS ── */
+.hands-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.hand-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  transition: border-color 0.3s;
+}
+.hand-panel.mercy-panel.active-panel {
+  border-color: var(--mercy-m);
+  box-shadow: 0 0 14px var(--mercy-glow);
+}
+.hand-panel.vlad-panel.active-panel {
+  border-color: var(--vlad-m);
+  box-shadow: 0 0 14px var(--vlad-glow);
+}
+.hand-panel.dimmed { opacity: 0.45; pointer-events: none; }
+
+.panel-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-label .pl-icon { font-size: 0.9rem; }
+.mercy-panel .panel-label { color: var(--mercy-h); }
+.vlad-panel  .panel-label { color: var(--vlad-h); }
+.panel-label .pl-badge {
+  margin-left: auto;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.65rem;
+  font-style: italic;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 70px;
+  align-items: flex-start;
+}
+.hand-empty {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.8rem;
+  align-self: center;
+  width: 100%;
+  text-align: center;
+}
+
+/* ── CARD ── */
+.card {
+  width: 104px;
+  border-radius: var(--r-md);
+  border: 1px solid;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+  background: var(--bg3);
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+  position: relative;
+}
+.card:active { cursor: grabbing; }
+.card.mercy-card {
+  border-color: var(--mercy-d);
+}
+.card.vlad-card {
+  border-color: var(--vlad-d);
+}
+.card:hover {
+  transform: translateY(-10px) scale(1.05) rotate(-1.5deg);
+  z-index: 50;
+}
+.card.vlad-card:hover { transform: translateY(-10px) scale(1.05) rotate(1.5deg); }
+.card.mercy-card:hover {
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px var(--mercy-glow);
+  border-color: var(--mercy-h);
+}
+.card.vlad-card:hover {
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px var(--vlad-glow);
+  border-color: var(--vlad-h);
+}
+.card.dragging { opacity: 0.3; transform: scale(0.9) rotate(4deg); }
+
+.card-art {
+  height: 65px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.mercy-card .card-art { background: linear-gradient(135deg, #0D7A52 0%, #2ECC8E 100%); }
+.vlad-card  .card-art { background: linear-gradient(135deg, #8B2010 0%, #E8442A 100%); }
+.art-glyph { font-size: 2rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); z-index: 1; }
+.art-shine {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 60%);
+  pointer-events: none;
+}
+.card-cost {
+  position: absolute; top: 5px; right: 5px;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 900;
+  color: var(--bg); z-index: 2;
+}
+.mercy-card .card-cost { background: var(--mercy-h); }
+.vlad-card  .card-cost { background: var(--vlad-h); }
+.card-rarity {
+  position: absolute; bottom: 4px; left: 6px;
+  font-size: 0.5rem; font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.card-body { padding: 6px 8px 8px; }
+.card-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--white);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 1px;
+}
+.card-type {
+  font-size: 0.5rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+}
+.card-stats {
+  display: flex; justify-content: space-between; margin-bottom: 4px;
+}
+.card-stats span { font-family: 'Cinzel', serif; font-size: 0.58rem; }
+.cs-a { color: #FF7060; }
+.cs-d { color: #60A8FF; }
+.cs-s { color: #60E8A0; }
+.card-fx {
+  font-size: 0.5rem; font-style: italic;
+  color: var(--muted); line-height: 1.4;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 4px;
+}
+
+/* ── ACTION BAR ── */
+.action-bar {
+  display: flex; gap: 10px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 14px;
+}
+.btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  border-radius: var(--r-sm);
+  border: 1px solid;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+  position: relative; overflow: hidden;
+}
+.btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.btn:hover::before { opacity: 0.08; }
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn:disabled::before { display: none; }
+
+.btn-draw { border-color: var(--gold); color: var(--gold-l); }
+.btn-draw:hover:not(:disabled) { box-shadow: 0 0 14px rgba(212,168,71,0.3); }
+.btn-attack { border-color: #FF7060; color: #FF9080; }
+.btn-attack:hover:not(:disabled) { box-shadow: 0 0 14px rgba(255,100,80,0.3); }
+.btn-end { border-color: var(--mercy-m); color: var(--mercy-h); }
+.btn-end.vlad-end { border-color: var(--vlad-m); color: var(--vlad-h); }
+.btn-end:hover:not(:disabled) { box-shadow: 0 0 14px var(--mercy-glow); }
+.btn-end.vlad-end:hover:not(:disabled) { box-shadow: 0 0 14px var(--vlad-glow); }
+.btn-reset { border-color: var(--muted); color: var(--silver); }
+
+/* ── LOG ── */
+.log-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px 16px;
+  max-height: 150px; overflow-y: auto;
+}
+.log-wrap::-webkit-scrollbar { width: 4px; }
+.log-wrap::-webkit-scrollbar-thumb { background: rgba(212,168,71,0.2); border-radius: 2px; }
+.log-hdr {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem; letter-spacing: 0.3em;
+  color: var(--muted); text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.log-entry {
+  font-size: 0.82rem; line-height: 1.5;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  animation: logIn 0.25s ease;
+}
+@keyframes logIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: none; } }
+.log-entry.mercy { color: var(--mercy-h); }
+.log-entry.vlad  { color: var(--vlad-h); }
+.log-entry.system { color: var(--gold); }
+.log-entry.damage { color: #FF9080; }
+.log-entry.error  { color: #FF7060; font-style: italic; }
+
+/* ── WIN MODAL ── */
+.modal-veil {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300; opacity: 0; pointer-events: none;
+  transition: opacity 0.35s;
+  backdrop-filter: blur(6px);
+}
+.modal-veil.open { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: var(--r-xl);
+  padding: 2.5rem 3rem;
+  text-align: center;
+  max-width: 380px; width: 90%;
+  box-shadow: 0 0 60px rgba(212,168,71,0.2);
+  transform: scale(0.85);
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-veil.open .modal-box { transform: scale(1); }
+.modal-glyph { font-size: 3.5rem; margin-bottom: 12px; animation: modalPop 0.5s 0.2s both; }
+@keyframes modalPop { from { transform: scale(0) rotate(-10deg); } to { transform: scale(1) rotate(0deg); } }
+.modal-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.8rem; font-weight: 900;
+  margin-bottom: 6px;
+}
+.modal-flavour {
+  font-style: italic; color: var(--muted);
+  font-size: 0.9rem; line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* ── SHAKE ANIM ── */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.shaking { animation: shake 0.35s ease; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .hands-grid { grid-template-columns: 1fr; }
+  .battlefield { grid-template-columns: 1fr; }
+  .bf-divider { display: none; }
+  .scoreboard { grid-template-columns: 1fr 54px 1fr; gap: 6px; }
+  .score-hp-num { font-size: 1.6rem; }
+}
 </style>
 </head>
 <body>
+<div class="page">
 
-<header>
-  <div class="title">
-    <span style="color:var(--vlad)">VLAD</span>
-    <span class="vs">VS</span>
-    <span style="color:var(--mercy)">MERCY</span>
+  <!-- HEADER -->
+  <header>
+    <div class="header-ornament">The Eternal Duel</div>
+    <h1>
+      <span class="mercy-name">Mercy</span>
+      <span class="vs-word"> vs </span>
+      <span class="vlad-name">Vladimir</span>
+    </h1>
+    <p class="subtitle">Two-Player Card Battle Station · Turn-Based</p>
+  </header>
+
+  <!-- TURN BANNER -->
+  <div class="turn-banner mercy-turn" id="turn-banner">
+    <div id="turn-who">✦ Mercy's Turn</div>
+    <div class="turn-step" id="turn-step">Step 1 of 3 — Draw your cards</div>
   </div>
-  <p class="subtitle">Flashcard Battle · First to 7 wins</p>
-</header>
 
-<div class="scoreboard">
-  <div class="player vlad" id="pVlad">
-    <div class="player-name">Vlad</div>
-    <div class="player-score" id="scoreVlad">0</div>
-    <div class="player-streak" id="streakVlad">—</div>
+  <!-- PHASE TRACK -->
+  <div class="phase-track">
+    <div class="phase-node active" id="pn-draw"><div class="p-dot"></div>Draw</div>
+    <div class="phase-connector"></div>
+    <div class="phase-node" id="pn-play"><div class="p-dot"></div>Play</div>
+    <div class="phase-connector"></div>
+    <div class="phase-node" id="pn-battle"><div class="p-dot"></div>Battle</div>
+    <div class="phase-connector"></div>
+    <div class="phase-node" id="pn-end"><div class="p-dot"></div>End</div>
   </div>
-  <div class="vs-badge">VS</div>
-  <div class="player mercy" id="pRcy">
-    <div class="player-name">Mercy</div>
-    <div class="player-score" id="scoreRcy">0</div>
-    <div class="player-streak" id="streakRcy">—</div>
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard">
+    <div class="score-card mercy-side mercy-active" id="mercy-score-card">
+      <div class="score-hero-name"><div class="hero-dot mercy-dot"></div>Mercy</div>
+      <div class="score-hp-num mercy" id="mercy-hp">20</div>
+      <div class="hp-rail"><div class="hp-fill mercy" id="mercy-bar" style="width:100%"></div></div>
+      <div class="mana-pips" id="mercy-mana"></div>
+      <div class="hand-count" id="mercy-hcount">Hand: 0 cards</div>
+    </div>
+    <div class="vs-center">
+      <span class="vs-glyph">⚔</span>
+      <div class="turn-num" id="turn-num">Turn 1</div>
+    </div>
+    <div class="score-card vlad-side" id="vlad-score-card" style="text-align:right">
+      <div class="score-hero-name"><div class="hero-dot vlad-dot"></div>Vladimir</div>
+      <div class="score-hp-num vlad" id="vlad-hp">20</div>
+      <div class="hp-rail"><div class="hp-fill vlad" id="vlad-bar" style="width:100%; float:right"></div></div>
+      <div class="mana-pips" id="vlad-mana" style="justify-content:flex-end"></div>
+      <div class="hand-count" id="vlad-hcount" style="text-align:right">Hand: 0 cards</div>
+    </div>
   </div>
-</div>
 
-<div class="round-info" id="roundInfo">Round 1</div>
-
-<div class="card-wrap">
-  <div class="card" id="flashcard" onclick="revealAnswer()">
-    <div class="card-tag" id="cardTag">General</div>
-    <div class="card-hint" id="cardHint">Click to reveal answer</div>
-    <div class="card-question" id="cardQuestion">Loading...</div>
-    <div class="card-answer" id="cardAnswer"></div>
+  <!-- BATTLEFIELD -->
+  <div class="bf-wrap">
+    <div class="bf-title">⚔ Battlefield ⚔</div>
+    <div class="battlefield">
+      <div class="field-zone mercy-zone" id="mercy-field"
+        ondragover="onDragOver(event,'mercy')"
+        ondragleave="this.classList.remove('drop-ok')"
+        ondrop="onDrop(event,'mercy')">
+        <div class="zone-hint">Mercy's Field</div>
+      </div>
+      <div class="bf-divider">
+        <span style="color:var(--mercy-h);font-size:0.8rem">◈</span>
+        <span style="font-size:0.5rem;letter-spacing:.1em;font-family:'Cinzel',serif;color:var(--muted)">VS</span>
+        <span style="color:var(--vlad-h);font-size:0.8rem">◈</span>
+      </div>
+      <div class="field-zone vlad-zone" id="vlad-field"
+        ondragover="onDragOver(event,'vlad')"
+        ondragleave="this.classList.remove('drop-ok')"
+        ondrop="onDrop(event,'vlad')">
+        <div class="zone-hint">Vladimir's Field</div>
+      </div>
+    </div>
   </div>
+
+  <!-- HANDS -->
+  <div class="hands-grid">
+    <div class="hand-panel mercy-panel active-panel" id="mercy-hand-panel">
+      <div class="panel-label">
+        <span class="pl-icon">✦</span> Mercy's Hand
+        <span class="pl-badge" id="mercy-panel-note">Your turn — draw first</span>
+      </div>
+      <div class="hand" id="mercy-hand"><div class="hand-empty">No cards drawn yet</div></div>
+    </div>
+    <div class="hand-panel vlad-panel dimmed" id="vlad-hand-panel">
+      <div class="panel-label">
+        <span class="pl-icon">◆</span> Vladimir's Hand
+        <span class="pl-badge" id="vlad-panel-note">Waiting...</span>
+      </div>
+      <div class="hand" id="vlad-hand"><div class="hand-empty">No cards drawn yet</div></div>
+    </div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <button class="btn btn-draw" id="btn-draw" onclick="doDrawPhase()">🃏 Draw Cards</button>
+    <button class="btn btn-attack" id="btn-attack" onclick="doBattlePhase()" disabled>⚔ Attack</button>
+    <button class="btn btn-end mercy-end" id="btn-end" onclick="doEndTurn()" disabled>End Turn →</button>
+    <button class="btn btn-reset" onclick="resetGame()">↺ New Game</button>
+  </div>
+
+  <!-- LOG -->
+  <div class="log-wrap">
+    <div class="log-hdr">⟩ Battle Chronicle</div>
+    <div id="log-body"></div>
+  </div>
+
 </div>
 
-<div class="buzzer-status" id="buzzerStatus"></div>
-
-<div class="buzz-row">
-  <button class="buzz-btn buzz-vlad" id="btnVlad" onclick="buzz('vlad')">⚡ VLAD</button>
-  <button class="buzz-btn buzz-rcy"  id="btnRcy"  onclick="buzz('rcy')">⚡ MERCY</button>
-</div>
-
-<div class="judge-row" id="judgeRow">
-  <button class="judge-btn judge-correct" onclick="judge(true)">✓ Correct</button>
-  <button class="judge-btn judge-wrong"   onclick="judge(false)">✗ Wrong</button>
-</div>
-
-<div class="controls">
-  <button class="ctrl-btn" onclick="skipCard()">Skip</button>
-  <button class="ctrl-btn" onclick="resetGame()">Reset</button>
-</div>
-
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-crown">👑</div>
-    <div class="modal-title">Winner</div>
-    <div class="modal-winner" id="modalWinner"></div>
-    <div class="modal-scores" id="modalScores"></div>
-    <button class="modal-restart" onclick="resetGame()">Play Again</button>
+<!-- WIN MODAL -->
+<div class="modal-veil" id="modal">
+  <div class="modal-box">
+    <div class="modal-glyph" id="modal-glyph">⚔</div>
+    <div class="modal-title" id="modal-title" style="color:var(--gold)">Victory!</div>
+    <div class="modal-flavour" id="modal-flavour">The battle is decided.</div>
+    <button class="btn btn-draw" onclick="resetGame()">⟳ New Game</button>
   </div>
 </div>
 
 <script>
-const cards = [
-  {q:"What is the capital of Japan?", a:"Tokyo", tag:"Geography"},
-  {q:"How many sides does a hexagon have?", a:"6", tag:"Math"},
-  {q:"What gas do plants absorb from the air?", a:"Carbon Dioxide (CO₂)", tag:"Science"},
-  {q:"Who wrote Romeo and Juliet?", a:"William Shakespeare", tag:"Literature"},
-  {q:"What is the speed of light (approx)?", a:"300,000 km/s", tag:"Physics"},
-  {q:"What planet is known as the Red Planet?", a:"Mars", tag:"Astronomy"},
-  {q:"What is 12 × 12?", a:"144", tag:"Math"},
-  {q:"What language does 'Merci' come from?", a:"French", tag:"Language"},
-  {q:"How many bones in the adult human body?", a:"206", tag:"Biology"},
-  {q:"What is the chemical symbol for Gold?", a:"Au", tag:"Chemistry"},
-  {q:"What year did World War II end?", a:"1945", tag:"History"},
-  {q:"What is the largest ocean on Earth?", a:"Pacific Ocean", tag:"Geography"},
-  {q:"Who painted the Mona Lisa?", a:"Leonardo da Vinci", tag:"Art"},
-  {q:"What is the powerhouse of the cell?", a:"Mitochondria", tag:"Biology"},
-  {q:"What does HTML stand for?", a:"HyperText Markup Language", tag:"Tech"},
-  {q:"What is the square root of 144?", a:"12", tag:"Math"},
-  {q:"What country invented pizza?", a:"Italy", tag:"Food"},
-  {q:"What is the longest river in the world?", a:"The Nile", tag:"Geography"},
-  {q:"What is 2 to the power of 10?", a:"1024", tag:"Math"},
-  {q:"What does CPU stand for?", a:"Central Processing Unit", tag:"Tech"},
+// ═══════════════════════════════════════════════════════
+//  CARD DEFINITIONS
+// ═══════════════════════════════════════════════════════
+const MERCY_DECK_DEF = [
+  {id:'m1', name:"Healer's Grace",    type:'Enchantment', atk:0, def:4, spd:6, cost:1, glyph:'✦', rarity:'Common',    fx:'Restore 3 HP instantly',           special:'heal3'},
+  {id:'m2', name:"Guardian Veil",     type:'Defense',     atk:1, def:8, spd:4, cost:2, glyph:'🛡', rarity:'Rare',      fx:'Raises a barrier — blocks 2 hits', special:'shield2'},
+  {id:'m3', name:"Grace Strike",      type:'Attack',      atk:6, def:2, spd:9, cost:2, glyph:'⚡', rarity:'Uncommon',  fx:'Swift — always strikes first',     special:'swift'},
+  {id:'m4', name:"Luminous Ward",     type:'Spell',       atk:2, def:5, spd:5, cost:1, glyph:'◈', rarity:'Common',    fx:'Reduces next damage taken by 2',   special:'ward'},
+  {id:'m5', name:"Empathy Surge",     type:'Attack',      atk:7, def:1, spd:3, cost:3, glyph:'♡', rarity:'Rare',      fx:'+2 ATK if Mercy is below 10 HP',   special:'lowbuff'},
+  {id:'m6', name:"Renewal Bloom",     type:'Enchantment', atk:0, def:5, spd:6, cost:2, glyph:'✿', rarity:'Common',    fx:'Regenerate 2 HP each end of turn', special:'regen'},
+  {id:'m7', name:"Seraph Blade",      type:'Attack',      atk:9, def:3, spd:5, cost:4, glyph:'⚔', rarity:'Epic',      fx:'Pierces — ignores 3 enemy DEF',    special:'pierce3'},
+  {id:'m8', name:"Sanctum Shield",    type:'Defense',     atk:1, def:10,spd:2, cost:3, glyph:'◉', rarity:'Rare',      fx:'Immune to spell effects 1 turn',   special:'immune'},
+  {id:'m9', name:"Sacred Light",      type:'Spell',       atk:4, def:3, spd:7, cost:2, glyph:'☀', rarity:'Uncommon',  fx:'Destroy one enemy field card',     special:'destroy'},
+  {id:'ma', name:"Angel's Wrath",     type:'Attack',      atk:11,def:2, spd:6, cost:5, glyph:'👼', rarity:'Legendary', fx:'ULTIMATE: Deals full ATK, no DEF', special:'ultimate'},
 ];
 
-let deck = [], round = 1, currentCard = null;
-let scores = {vlad:0, rcy:0};
-let streaks = {vlad:0, rcy:0};
-let buzzed = null, revealed = false;
-const WIN = 7;
+const VLAD_DECK_DEF = [
+  {id:'v1', name:"Iron Fist",         type:'Attack',      atk:6, def:2, spd:5, cost:2, glyph:'✊', rarity:'Common',    fx:'Stuns target — they skip draw',    special:'stun'},
+  {id:'v2', name:"Cold Precision",    type:'Attack',      atk:8, def:1, spd:7, cost:3, glyph:'❄', rarity:'Rare',      fx:'Critical: +3 if Vladimir alone',   special:'crit'},
+  {id:'v3', name:"Bastion Wall",      type:'Defense',     atk:0, def:10,spd:1, cost:3, glyph:'█', rarity:'Rare',      fx:'Unbreakable — doubles DEF this turn',special:'fortify'},
+  {id:'v4', name:"Shadow Strike",     type:'Attack',      atk:6, def:2, spd:9, cost:2, glyph:'◆', rarity:'Uncommon',  fx:'Unblockable — deals 3 direct dmg', special:'unblock'},
+  {id:'v5', name:"Dread Command",     type:'Spell',       atk:3, def:4, spd:5, cost:2, glyph:'☩', rarity:'Uncommon',  fx:'Force enemy to discard 1 card',    special:'discard'},
+  {id:'v6', name:"Iron Will",         type:'Defense',     atk:2, def:7, spd:3, cost:2, glyph:'⧖', rarity:'Common',    fx:'Halve all damage next turn',       special:'halve'},
+  {id:'v7', name:"Warlord's Cry",     type:'Enchantment', atk:4, def:3, spd:6, cost:3, glyph:'⚑', rarity:'Rare',      fx:'All Vladimir cards get +2 ATK',    special:'rally'},
+  {id:'v8', name:"Siege Engine",      type:'Attack',      atk:7, def:5, spd:3, cost:4, glyph:'⚙', rarity:'Epic',      fx:'AoE — hits enemy hero directly +2',special:'aoe'},
+  {id:'v9', name:"Blood Pact",        type:'Spell',       atk:5, def:2, spd:6, cost:2, glyph:'🩸', rarity:'Uncommon',  fx:'Trade 3 HP for +4 ATK this turn',  special:'bloodpact'},
+  {id:'va', name:"Tyrant's Edge",     type:'Attack',      atk:12,def:4, spd:5, cost:5, glyph:'🗡', rarity:'Legendary', fx:'ULTIMATE: Pierces all DEF & WARD', special:'tyrult'},
+];
 
-function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5);}
+// ═══════════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════════
+let S = {};
 
-function initDeck(){
-  deck = shuffle(cards);
+function shuffle(a) {
+  const b = [...a];
+  for (let i = b.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [b[i],b[j]] = [b[j],b[i]];
+  }
+  return b;
 }
 
-function nextCard(){
-  if(deck.length === 0) initDeck();
-  currentCard = deck.pop();
-  revealed = false; buzzed = null;
-  const fc = document.getElementById('flashcard');
-  fc.classList.remove('revealed');
-  document.getElementById('cardQuestion').textContent = currentCard.q;
-  document.getElementById('cardAnswer').textContent = currentCard.a;
-  document.getElementById('cardTag').textContent = currentCard.tag;
-  document.getElementById('cardHint').textContent = 'Tap to reveal answer';
-  document.getElementById('buzzerStatus').textContent = '';
-  document.getElementById('buzzerStatus').className = 'buzzer-status';
-  document.getElementById('judgeRow').classList.remove('visible');
-  document.getElementById('btnVlad').disabled = false;
-  document.getElementById('btnRcy').disabled  = false;
-  document.getElementById('roundInfo').textContent = `Round ${round}`;
-  updateScoreboard();
+function deepClone(a) { return a.map(c => ({...c})); }
+
+function initGame() {
+  S = {
+    turn: 'mercy',         // whose turn it is
+    phase: 'draw',         // draw | play | battle | end
+    turnNum: 1,
+
+    mercyHp: 20,   vladHp: 20,
+    mercyMaxHp: 20, vladMaxHp: 20,
+    mercyMana: 3,  vladMana: 3,
+    mercyMaxMana: 3, vladMaxMana: 3,
+
+    mercyHand: [], vladHand: [],
+    mercyField: [], vladField: [],
+    mercyDeck: shuffle(deepClone(MERCY_DECK_DEF)),
+    vladDeck:  shuffle(deepClone(VLAD_DECK_DEF)),
+
+    mercyShield: 0,  vladShield: 0,
+    mercyRegen:  false, vladRegen: false,
+    mercyHalve:  false, vladHalve: false,
+    mercyWard:   0,  vladWard: 0,
+    stunned: null,   // 'mercy' | 'vlad' | null
+
+    dragging: null, draggingOwner: null,
+    gameOver: false,
+  };
 }
 
-function revealAnswer(){
-  if(revealed) return;
-  revealed = true;
-  document.getElementById('flashcard').classList.add('revealed');
-  document.getElementById('cardHint').textContent = 'Answer:';
-  if(buzzed){
-    document.getElementById('judgeRow').classList.add('visible');
+// ═══════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════
+function render() {
+  const t = S.turn;
+
+  // HP
+  const mhp = Math.max(0, S.mercyHp), vhp = Math.max(0, S.vladHp);
+  document.getElementById('mercy-hp').textContent = mhp;
+  document.getElementById('vlad-hp').textContent  = vhp;
+  document.getElementById('mercy-bar').style.width = (mhp/S.mercyMaxHp*100)+'%';
+  document.getElementById('vlad-bar').style.width  = (vhp/S.vladMaxHp*100)+'%';
+
+  // Mana
+  renderMana('mercy-mana','mercy-pip',S.mercyMana,S.mercyMaxMana);
+  renderMana('vlad-mana','vlad-pip',S.vladMana,S.vladMaxMana);
+
+  // Hand counts
+  document.getElementById('mercy-hcount').textContent = `Hand: ${S.mercyHand.length} card${S.mercyHand.length!==1?'s':''}`;
+  document.getElementById('vlad-hcount').textContent  = `Hand: ${S.vladHand.length} card${S.vladHand.length!==1?'s':''}`;
+
+  // Turn banner
+  const banner = document.getElementById('turn-banner');
+  banner.className = 'turn-banner ' + (t==='mercy'?'mercy-turn':'vlad-turn');
+  const stepText = {draw:'Step 1 of 3 — Draw your cards', play:'Step 2 of 3 — Play cards from your hand', battle:'Step 3 of 3 — Attack the opponent', end:'Turn complete'};
+  document.getElementById('turn-who').textContent = t==='mercy' ? '✦ Mercy\'s Turn' : '◆ Vladimir\'s Turn';
+  document.getElementById('turn-step').textContent = stepText[S.phase] || '';
+  document.getElementById('turn-num').textContent  = `Turn ${S.turnNum}`;
+
+  // Score card highlights
+  document.getElementById('mercy-score-card').className = 'score-card mercy-side'+(t==='mercy'?' mercy-active':'');
+  document.getElementById('vlad-score-card').className  = 'score-card vlad-side'+(t==='vlad'?' vlad-active':'');
+
+  // Hand panels — dim opponent
+  document.getElementById('mercy-hand-panel').classList.toggle('dimmed', t!=='mercy');
+  document.getElementById('vlad-hand-panel').classList.toggle('dimmed',  t!=='vlad');
+  document.getElementById('mercy-hand-panel').classList.toggle('active-panel', t==='mercy');
+  document.getElementById('vlad-hand-panel').classList.toggle('active-panel',  t==='vlad');
+
+  // Panel notes
+  const pnoteM = t==='mercy' ? phaseNote('mercy') : 'Waiting for Mercy…';
+  const pnoteV = t==='vlad'  ? phaseNote('vlad')  : 'Waiting for Vladimir…';
+  document.getElementById('mercy-panel-note').textContent = pnoteM;
+  document.getElementById('vlad-panel-note').textContent  = pnoteV;
+
+  // Phases
+  ['draw','play','battle','end'].forEach(p => {
+    document.getElementById('pn-'+p).classList.toggle('active', S.phase===p);
+  });
+
+  // Hands
+  renderHand('mercy-hand', S.mercyHand, 'mercy');
+  renderHand('vlad-hand',  S.vladHand,  'vlad');
+
+  // Fields
+  renderField('mercy-field', S.mercyField, 'mercy');
+  renderField('vlad-field',  S.vladField,  'vlad');
+
+  // Buttons
+  const isDrawPhase   = S.phase==='draw';
+  const isPlayPhase   = S.phase==='play';
+  const isBattle      = S.phase==='battle' || isPlayPhase;
+  document.getElementById('btn-draw').disabled   = !isDrawPhase || S.gameOver;
+  document.getElementById('btn-attack').disabled = !(isPlayPhase||S.phase==='battle') || S.gameOver;
+  document.getElementById('btn-end').disabled    = isDrawPhase || S.gameOver;
+
+  // End button colour
+  const endBtn = document.getElementById('btn-end');
+  endBtn.className = 'btn btn-end'+(t==='vlad'?' vlad-end':'');
+}
+
+function phaseNote(who) {
+  if (S.phase==='draw')   return 'Draw your cards to begin';
+  if (S.phase==='play')   return 'Drag or double-click cards to play';
+  if (S.phase==='battle') return 'Press Attack to strike!';
+  return '';
+}
+
+function renderMana(elId, cls, cur, max) {
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  for (let i=0;i<max;i++){
+    const d=document.createElement('div');
+    d.className='pip '+cls+(i<cur?' lit':'');
+    el.appendChild(d);
   }
 }
 
-function buzz(who){
-  if(buzzed) return;
-  buzzed = who;
-  document.getElementById('btnVlad').disabled = true;
-  document.getElementById('btnRcy').disabled  = true;
-  const status = document.getElementById('buzzerStatus');
-  status.textContent = (who === 'vlad' ? '⚡ VLAD buzzed in!' : '⚡ RCY buzzed in!');
-  status.className = 'buzzer-status ' + (who === 'vlad' ? 'vlad-buzz' : 'rcy-buzz');
-  if(revealed){
-    document.getElementById('judgeRow').classList.add('visible');
-  }
-}
-
-function judge(correct){
-  if(!buzzed) return;
-  if(correct){
-    scores[buzzed]++;
-    streaks[buzzed]++;
-    streaks[buzzed === 'vlad' ? 'rcy' : 'vlad'] = 0;
-  } else {
-    streaks[buzzed] = 0;
-  }
-  round++;
-  updateScoreboard();
-  if(scores[buzzed] >= WIN && correct){
-    showWinner(buzzed);
+function renderHand(elId, hand, owner) {
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  if (!hand.length) {
+    el.innerHTML = '<div class="hand-empty">— empty —</div>';
     return;
   }
-  setTimeout(nextCard, 400);
+  hand.forEach(card => el.appendChild(makeCardEl(card, owner)));
 }
 
-function skipCard(){
-  round++;
-  setTimeout(nextCard, 200);
+function renderField(elId, field, owner) {
+  const el = document.getElementById(elId);
+  const hint = el.querySelector('.zone-hint');
+  el.innerHTML = '';
+  if (hint) el.appendChild(hint);
+  field.forEach(card => {
+    const d = document.createElement('div');
+    d.className = `field-mini ${owner==='mercy'?'m-mini':'v-mini'}`;
+    d.title = card.fx;
+    d.innerHTML = `
+      <div class="mini-art">${card.glyph}</div>
+      <div class="mini-name">${card.name}</div>
+      <div class="mini-stats"><span class="ms-a">⚔${card.atk}</span><span class="ms-d">🛡${card.def}</span></div>`;
+    el.appendChild(d);
+  });
 }
 
-function updateScoreboard(){
-  document.getElementById('scoreVlad').textContent = scores.vlad;
-  document.getElementById('scoreRcy').textContent  = scores.rcy;
-  document.getElementById('streakVlad').textContent = streaks.vlad > 1 ? `🔥 ${streaks.vlad} streak` : '—';
-  document.getElementById('streakRcy').textContent  = streaks.rcy  > 1 ? `🔥 ${streaks.rcy} streak`  : '—';
-  const pv = document.getElementById('pVlad');
-  const pr = document.getElementById('pRcy');
-  pv.className = 'player vlad' + (buzzed === 'vlad' ? ' active-player vlad-active' : '');
-  pr.className = 'player rcy'  + (buzzed === 'rcy'  ? ' active-player rcy-active'  : '');
+function makeCardEl(card, owner) {
+  const d = document.createElement('div');
+  d.className = `card ${owner}-card`;
+  d.draggable = S.turn===owner && S.phase==='play';
+  d.dataset.id = card.id;
+  d.innerHTML = `
+    <div class="card-art">
+      <span class="art-glyph">${card.glyph}</span>
+      <div class="art-shine"></div>
+      <div class="card-cost">${card.cost}</div>
+      <div class="card-rarity">${card.rarity}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-name">${card.name}</div>
+      <div class="card-type">${card.type}</div>
+      <div class="card-stats">
+        <span class="cs-a">⚔${card.atk}</span>
+        <span class="cs-d">🛡${card.def}</span>
+        <span class="cs-s">⚡${card.spd}</span>
+      </div>
+      <div class="card-fx">${card.fx}</div>
+    </div>`;
+
+  d.addEventListener('dragstart', e => {
+    if (S.turn!==owner || S.phase!=='play') { e.preventDefault(); return; }
+    S.dragging = card; S.draggingOwner = owner;
+    setTimeout(() => d.classList.add('dragging'), 0);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  d.addEventListener('dragend', () => d.classList.remove('dragging'));
+  d.addEventListener('dblclick', () => playCard(card, owner));
+  return d;
 }
 
-function showWinner(who){
-  document.getElementById('modalWinner').textContent = who.toUpperCase();
-  document.getElementById('modalWinner').style.color = who === 'vlad' ? 'var(--vlad)' : 'var(--rcy)';
-  document.getElementById('modalScores').innerHTML =
-    `<span style="color:var(--vlad)">Vlad: ${scores.vlad}</span> &nbsp;·&nbsp; <span style="color:var(--rcy)">Rcy: ${scores.rcy}</span><br/>Rounds played: ${round-1}`;
-  document.getElementById('modal').classList.add('show');
+// ═══════════════════════════════════════════════════════
+//  DRAG & DROP
+// ═══════════════════════════════════════════════════════
+function onDragOver(e, zone) {
+  if (S.draggingOwner===zone) {
+    e.preventDefault();
+    document.getElementById(zone+'-field').classList.add('drop-ok');
+  }
+}
+function onDrop(e, zone) {
+  e.preventDefault();
+  document.getElementById(zone+'-field').classList.remove('drop-ok');
+  if (S.dragging && S.draggingOwner===zone) {
+    playCard(S.dragging, zone);
+    S.dragging = null; S.draggingOwner = null;
+  }
 }
 
-function resetGame(){
-  scores = {vlad:0,rcy:0};
-  streaks = {vlad:0,rcy:0};
-  round = 1; buzzed = null; revealed = false;
-  document.getElementById('modal').classList.remove('show');
-  initDeck();
-  nextCard();
+// ═══════════════════════════════════════════════════════
+//  TURN PHASES
+// ═══════════════════════════════════════════════════════
+function doDrawPhase() {
+  if (S.gameOver || S.phase!=='draw') return;
+
+  const t = S.turn;
+  const deck = t==='mercy'?S.mercyDeck:S.vladDeck;
+  const hand = t==='mercy'?S.mercyHand:S.vladHand;
+
+  // Stun: skip draw
+  if (S.stunned===t) {
+    log(`${t==='mercy'?'✦ Mercy':'◆ Vladimir'} is stunned and skips drawing!`, 'damage');
+    S.stunned = null;
+    S.phase = 'play';
+    render(); return;
+  }
+
+  const toDraw = Math.min(2, Math.max(0, 5 - hand.length), deck.length);
+  if (toDraw===0) {
+    log('Deck empty or hand full! Moving to play phase.', 'system');
+  } else {
+    for (let i=0;i<toDraw;i++) hand.push(deck.splice(0,1)[0]);
+    log(`${t==='mercy'?'✦ Mercy':'◆ Vladimir'} draws ${toDraw} card${toDraw>1?'s':''}.`, t);
+  }
+  S.phase = 'play';
+  render();
 }
 
-initDeck();
-nextCard();
+function playCard(card, owner) {
+  if (S.gameOver) return;
+  if (owner !== S.turn) {
+    log(`It is ${S.turn==='mercy'?'Mercy':'Vladimir'}'s turn — you cannot play ${owner==='mercy'?'Mercy':'Vladimir'}'s cards!`, 'error');
+    shakePanel(owner); return;
+  }
+  if (S.phase!=='play') {
+    log('Draw your cards before playing!', 'error'); return;
+  }
+  const mana = owner==='mercy'?S.mercyMana:S.vladMana;
+  if (card.cost>mana) {
+    log(`Not enough mana! ${card.name} costs ${card.cost} — you have ${mana}.`, 'error'); return;
+  }
+
+  // Remove from hand
+  if (owner==='mercy') {
+    S.mercyHand = S.mercyHand.filter(c=>c.id!==card.id);
+    S.mercyMana -= card.cost;
+    S.mercyField.push(card);
+  } else {
+    S.vladHand  = S.vladHand.filter(c=>c.id!==card.id);
+    S.vladMana  -= card.cost;
+    S.vladField.push(card);
+  }
+
+  applyOnPlayEffect(card, owner);
+  log(`${owner==='mercy'?'✦ Mercy':'◆ Vladimir'} plays ${card.glyph} ${card.name}.`, owner);
+  checkWin();
+  render();
+}
+
+function applyOnPlayEffect(card, owner) {
+  const iM = owner==='mercy';
+  switch(card.special) {
+    case 'heal3':
+      if(iM) S.mercyHp=Math.min(S.mercyMaxHp,S.mercyHp+3);
+      else   S.vladHp =Math.min(S.vladMaxHp, S.vladHp+3);
+      log(`${iM?'Mercy':'Vladimir'} heals 3 HP ♡`, owner); break;
+    case 'shield2':
+      if(iM) S.mercyShield+=2; else S.vladShield+=2;
+      log(`${iM?'Mercy':'Vladimir'} raises a barrier (+2 shield blocks)!`, owner); break;
+    case 'ward':
+      if(iM) S.mercyWard+=2; else S.vladWard+=2;
+      log(`${iM?'Mercy':'Vladimir'} wards off 2 incoming damage!`, owner); break;
+    case 'regen':
+      if(iM) S.mercyRegen=true; else S.vladRegen=true;
+      log(`${iM?'Mercy':'Vladimir'} gains regeneration (2 HP/turn).`, owner); break;
+    case 'rally':
+      const rfield = iM?S.mercyField:S.vladField;
+      rfield.forEach(c=>c.atk+=2);
+      log(`${iM?'Mercy':'Vladimir'}'s Warlord Cry — all field cards +2 ATK!`, owner); break;
+    case 'bloodpact':
+      if(iM){S.mercyHp=Math.max(1,S.mercyHp-3); S.mercyField.forEach(c=>c.atk+=4);}
+      else  {S.vladHp =Math.max(1,S.vladHp-3);  S.vladField.forEach(c=>c.atk+=4);}
+      log(`${iM?'Mercy':'Vladimir'} trades 3 HP for +4 ATK! 🩸`, owner); break;
+    case 'fortify':
+      const ffield = iM?S.mercyField:S.vladField;
+      ffield.forEach(c=>c.def*=2);
+      log(`${iM?'Mercy':'Vladimir'}'s Bastion — DEF doubled this battle!`, owner); break;
+    case 'discard':
+      const ohand = iM?S.vladHand:S.mercyHand;
+      if(ohand.length>0){
+        const lost=ohand.splice(Math.floor(Math.random()*ohand.length),1)[0];
+        log(`Dread Command! ${iM?'Vladimir':'Mercy'} discards ${lost.name}! ☩`, owner);
+      } else { log('No card to discard!','system'); }
+      break;
+    case 'destroy':
+      const tfield = iM?S.vladField:S.mercyField;
+      if(tfield.length>0){
+        const killed=tfield.splice(Math.floor(Math.random()*tfield.length),1)[0];
+        log(`Sacred Light destroys ${killed.name}! ☀`, owner);
+      } else { log('No enemy field card to destroy!','system'); }
+      break;
+    case 'halve':
+      if(iM) S.mercyHalve=true; else S.vladHalve=true;
+      log(`${iM?'Mercy':'Vladimir'} prepares Iron Will — next damage halved!`, owner); break;
+  }
+}
+
+function doBattlePhase() {
+  if (S.gameOver) return;
+  if (S.phase==='draw') { log('Draw cards before attacking!','error'); return; }
+
+  const atk = S.turn, def = atk==='mercy'?'vlad':'mercy';
+  const atkField = atk==='mercy'?S.mercyField:S.vladField;
+  const defField = def==='mercy'?S.mercyField:S.vladField;
+
+  if (atkField.length===0) {
+    log('No cards on your field! Play at least one card first.','error'); return;
+  }
+
+  S.phase = 'battle';
+
+  // Totals
+  let totalAtk = atkField.reduce((s,c)=>s+c.atk, 0);
+  let totalDef = defField.reduce((s,c)=>s+c.def, 0);
+
+  // Low HP buff
+  if (atkField.some(c=>c.special==='lowbuff')) {
+    const curHp = atk==='mercy'?S.mercyHp:S.vladHp;
+    if (curHp<10) { totalAtk+=2; log('Empathy Surge: Low HP bonus +2 ATK!', atk); }
+  }
+  // Crit (alone on field)
+  if (atkField.some(c=>c.special==='crit') && atkField.length===1) {
+    totalAtk+=3; log('Cold Precision: Solo critical +3 ATK!', atk);
+  }
+  // Unblockable: 3 direct damage on top
+  let directBonus = 0;
+  if (atkField.some(c=>c.special==='unblock')) {
+    directBonus=3; log('Shadow Strike slips through — 3 unblockable damage!', atk);
+  }
+  // AoE: +2 direct
+  if (atkField.some(c=>c.special==='aoe')) {
+    directBonus+=2; log('Siege Engine rains destruction — +2 direct damage!', atk);
+  }
+  // Ultimate bypass
+  let dmg = 0;
+  if (atkField.some(c=>c.special==='ultimate'||c.special==='tyrult')) {
+    dmg = totalAtk;
+    log('⚡ ULTIMATE CARD — all defense bypassed!', atk);
+  } else {
+    const defAfterWard = Math.max(0, totalDef - (def==='mercy'?S.mercyWard:S.vladWard));
+    dmg = Math.max(0, totalAtk - Math.floor(defAfterWard*0.5));
+  }
+
+  // Shield blocks
+  const shield = def==='mercy'?S.mercyShield:S.vladShield;
+  if (shield>0) {
+    const blocked = Math.min(shield, dmg);
+    dmg -= blocked;
+    if(def==='mercy') S.mercyShield=Math.max(0,S.mercyShield-blocked);
+    else S.vladShield=Math.max(0,S.vladShield-blocked);
+    if (blocked>0) log(`${def==='mercy'?'Mercy':'Vladimir'}'s barrier blocks ${blocked} damage!`, def);
+  }
+
+  // Halve
+  if (def==='mercy'&&S.mercyHalve) { dmg=Math.floor(dmg/2); S.mercyHalve=false; log("Mercy's Iron Will halves the damage!",'mercy'); }
+  if (def==='vlad' &&S.vladHalve)  { dmg=Math.floor(dmg/2); S.vladHalve=false;  log("Vladimir's Iron Will halves the damage!",'vlad'); }
+
+  // Ward
+  const ward = def==='mercy'?S.mercyWard:S.vladWard;
+  if (ward>0) {
+    const wblocked = Math.min(ward, dmg);
+    dmg = Math.max(0, dmg-wblocked);
+    if(def==='mercy') S.mercyWard=0; else S.vladWard=0;
+    if (wblocked>0) log(`${def==='mercy'?'Mercy':'Vladimir'}'s ward absorbs ${wblocked} damage!`, def);
+  }
+
+  dmg += directBonus;
+
+  if (def==='mercy') S.mercyHp = Math.max(0, S.mercyHp-dmg);
+  else               S.vladHp  = Math.max(0, S.vladHp-dmg);
+
+  log(`⚔ ${atk==='mercy'?'Mercy':'Vladimir'} attacks! [ATK:${totalAtk} vs DEF:${totalDef}] → ${dmg} damage dealt!`, 'damage');
+  if (dmg===0&&directBonus===0) log('Attack fully absorbed — no damage!','system');
+
+  // Stun
+  if (atkField.some(c=>c.special==='stun')) {
+    S.stunned = def;
+    log(`${def==='mercy'?'Mercy':'Vladimir'} is stunned! Will skip next draw phase.`,'damage');
+  }
+
+  shakeHp(def);
+  checkWin();
+  render();
+}
+
+function doEndTurn() {
+  if (S.gameOver) return;
+  if (S.phase==='draw') { log('Draw your cards before ending the turn!','error'); return; }
+
+  const old = S.turn;
+  S.turn  = old==='mercy'?'vlad':'mercy';
+  S.phase = 'draw';
+  S.turnNum++;
+
+  // Regen
+  if (S.mercyRegen) { S.mercyHp=Math.min(S.mercyMaxHp,S.mercyHp+2); log('✿ Renewal Bloom: Mercy regenerates 2 HP.','mercy'); }
+  if (S.vladRegen)  { S.vladHp=Math.min(S.vladMaxHp,  S.vladHp+2);  log('✿ Renewal Bloom: Vladimir regenerates 2 HP.','vlad'); }
+
+  // Mana scale
+  const newMax = Math.min(7, 3+Math.floor(S.turnNum/2));
+  S.mercyMaxMana = S.vladMaxMana = newMax;
+  S.mercyMana    = newMax;
+  S.vladMana     = newMax;
+
+  // Pierce: remove bonus after turn (reset fortify)
+  // Fortify is already applied only on play so no reset needed
+
+  log(`— Turn ${S.turnNum}: ${S.turn==='mercy'?'✦ Mercy':'◆ Vladimir'} begins. —`, 'system');
+  checkWin();
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  WIN CHECK
+// ═══════════════════════════════════════════════════════
+function checkWin() {
+  if (S.mercyHp<=0) endGame('vlad');
+  else if (S.vladHp<=0) endGame('mercy');
+}
+
+function endGame(winner) {
+  if (S.gameOver) return;
+  S.gameOver = true;
+  const iM = winner==='mercy';
+  document.getElementById('modal-glyph').textContent   = iM?'✦':'◆';
+  document.getElementById('modal-glyph').style.color   = iM?'var(--mercy-h)':'var(--vlad-h)';
+  document.getElementById('modal-title').style.color   = iM?'var(--mercy-h)':'var(--vlad-h)';
+  document.getElementById('modal-title').textContent   = iM?'Mercy Triumphs!':'Vladimir Wins!';
+  document.getElementById('modal-flavour').textContent = iM
+    ? 'Grace and empathy overcome iron — Mercy stands victorious.'
+    : 'Cold precision and iron will — Vladimir claims the battlefield.';
+  document.getElementById('modal').classList.add('open');
+  log(`⚑ BATTLE OVER — ${iM?'Mercy':'Vladimir'} is victorious!`, 'system');
+}
+
+// ═══════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════
+function log(msg, cls) {
+  const el = document.getElementById('log-body');
+  const d  = document.createElement('div');
+  d.className = 'log-entry '+(cls||'');
+  d.textContent = msg;
+  el.insertBefore(d, el.firstChild);
+  while (el.children.length>25) el.removeChild(el.lastChild);
+}
+
+function shakeHp(who) {
+  const el = document.getElementById(who+'-hp');
+  el.classList.remove('shaking');
+  void el.offsetWidth;
+  el.classList.add('shaking');
+  setTimeout(()=>el.classList.remove('shaking'), 400);
+}
+
+function shakePanel(who) {
+  const el = document.getElementById(who+'-hand-panel');
+  el.classList.remove('shaking');
+  void el.offsetWidth;
+  el.classList.add('shaking');
+  setTimeout(()=>el.classList.remove('shaking'), 400);
+}
+
+function resetGame() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('log-body').innerHTML = '';
+  initGame();
+  render();
+  log('⚔ A new duel begins. Mercy vs Vladimir!', 'system');
+  log('How to play: Draw Cards → Play cards (drag or double-click) → Attack → End Turn. Each player controls their own hand only.', 'system');
+}
+
+// ═══════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════
+initGame();
+render();
+log('⚔ Welcome to the Mercy vs Vladimir Battle Station!', 'system');
+log('Mercy goes first. Draw Cards to begin your turn.', 'system');
 </script>
 </body>
 </html>
