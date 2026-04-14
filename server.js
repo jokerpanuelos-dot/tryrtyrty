@@ -1,233 +1,259 @@
-/**
- * Color Game with Banker - Server
- * Real-time multiplayer game using Socket.io
- */
-
-const express = require('express');
+const WebSocket = require('ws');
 const http = require('http');
-const { Server } = require('socket.io');
+const fs = require('fs');
 const path = require('path');
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: '*' }
+const PORT = process.env.PORT || 3000;
+
+// HTTP server for static files
+const server = http.createServer((req, res) => {
+  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  const ext = path.extname(filePath);
+  const mimeTypes = {
+    '.html': 'text/html',
+    '.js': 'text/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+  };
+  const contentType = mimeTypes[ext] || 'text/plain';
+  fs.readFile(filePath, (err, content) => {
+    if (err) {
+      res.writeHead(404);
+      res.end('Not found');
+    } else {
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(content);
+    }
+  });
 });
 
-// Serve static files from /public
-app.use(express.static(path.join(__dirname, 'public')));
+// WebSocket server
+const wss = new WebSocket.Server({ server });
 
-// --- In-Memory Game State ---
-// rooms: { [roomCode]: { banker, players, round, phase, winningColor, history } }
-const rooms = {};
+// Game state
+let gameState = {
+  phase: 'waiting',   // waiting | betting | reveal | result
+  round: 0,
+  colors: ['Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange'],
+  winningColor: null,
+  bets: {},           // { playerId: { color, amount } }
+  players: {},        // { id: { name, balance, role } }
+  countdown: 0,
+  history: [],
+  bankerConnected: false,
+};
 
-// Generate a random 4-character room code
-function generateRoomCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 4; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return rooms[code] ? generateRoomCode() : code; // ensure unique
+let countdownInterval = null;
+
+function broadcast(data, excludeId = null) {
+  const msg = JSON.stringify(data);
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      if (!excludeId || client.playerId !== excludeId) {
+        client.send(msg);
+      }
+    }
+  });
 }
 
-// Get a sanitized room state to broadcast to clients
-function getRoomState(room) {
+function sendTo(ws, data) {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data));
+  }
+}
+
+function getPublicState() {
   return {
-    code: room.code,
-    round: room.round,
-    phase: room.phase, // 'waiting' | 'betting' | 'result'
-    winningColor: room.winningColor,
-    players: room.players.map(p => ({
-      id: p.id,
+    type: 'state',
+    phase: gameState.phase,
+    round: gameState.round,
+    colors: gameState.colors,
+    players: Object.entries(gameState.players).map(([id, p]) => ({
+      id,
       name: p.name,
-      credits: p.credits,
-      selectedColor: p.selectedColor,
-      isReady: p.isReady
+      balance: p.balance,
+      hasBet: !!gameState.bets[id],
+      betColor: gameState.phase === 'result' ? (gameState.bets[id]?.color || null) : null,
     })),
-    history: room.history
+    betCounts: (() => {
+      const counts = {};
+      gameState.colors.forEach(c => counts[c] = 0);
+      Object.values(gameState.bets).forEach(b => {
+        if (b && b.color) counts[b.color] = (counts[b.color] || 0) + 1;
+      });
+      return counts;
+    })(),
+    countdown: gameState.countdown,
+    history: gameState.history.slice(-10),
+    bankerConnected: gameState.bankerConnected,
   };
 }
 
-// --- Socket.io Events ---
-io.on('connection', (socket) => {
-  console.log(`[+] Connected: ${socket.id}`);
-
-  // === CREATE ROOM (Banker) ===
-  socket.on('create_room', ({ name }, callback) => {
-    const code = generateRoomCode();
-    rooms[code] = {
-      code,
-      banker: { id: socket.id, name },
-      players: [],
-      round: 0,
-      phase: 'waiting',
-      winningColor: null,
-      history: []
-    };
-    socket.join(code);
-    socket.roomCode = code;
-    socket.isBanker = true;
-    console.log(`[Room] ${code} created by banker: ${name}`);
-    callback({ success: true, code, roomState: getRoomState(rooms[code]) });
-  });
-
-  // === JOIN ROOM (Player) ===
-  socket.on('join_room', ({ name, code }, callback) => {
-    const room = rooms[code];
-    if (!room) return callback({ success: false, error: 'Room not found.' });
-    if (room.phase !== 'waiting') return callback({ success: false, error: 'Game already in progress.' });
-    if (room.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
-      return callback({ success: false, error: 'Name already taken in this room.' });
+function startCountdown(seconds, onEnd) {
+  clearInterval(countdownInterval);
+  gameState.countdown = seconds;
+  broadcast(getPublicState());
+  countdownInterval = setInterval(() => {
+    gameState.countdown--;
+    broadcast({ type: 'countdown', value: gameState.countdown });
+    if (gameState.countdown <= 0) {
+      clearInterval(countdownInterval);
+      onEnd();
     }
+  }, 1000);
+}
 
-    const player = {
-      id: socket.id,
-      name,
-      credits: 100, // starting credits
-      selectedColor: null,
-      isReady: false
-    };
+wss.on('connection', (ws) => {
+  ws.playerId = null;
 
-    room.players.push(player);
-    socket.join(code);
-    socket.roomCode = code;
-    socket.isBanker = false;
+  sendTo(ws, { type: 'welcome' });
 
-    console.log(`[Room] ${code} - ${name} joined`);
-    io.to(code).emit('room_updated', getRoomState(room));
-    callback({ success: true, roomState: getRoomState(room) });
-  });
+  ws.on('message', (raw) => {
+    let msg;
+    try { msg = JSON.parse(raw); } catch { return; }
 
-  // === BANKER: START ROUND ===
-  socket.on('start_round', (callback) => {
-    const room = rooms[socket.roomCode];
-    if (!room || !socket.isBanker) return;
-    if (room.players.length === 0) return callback?.({ error: 'No players in room.' });
+    switch (msg.type) {
 
-    room.round += 1;
-    room.phase = 'betting';
-    room.winningColor = null;
+      case 'join': {
+        const id = msg.id || ('p_' + Math.random().toString(36).slice(2, 8));
+        ws.playerId = id;
+        const isRejoining = !!gameState.players[id];
 
-    // Reset player selections for new round
-    room.players.forEach(p => {
-      p.selectedColor = null;
-      p.isReady = false;
-    });
-
-    console.log(`[Room] ${room.code} - Round ${room.round} started`);
-    io.to(room.code).emit('room_updated', getRoomState(room));
-    callback?.({ success: true });
-  });
-
-  // === PLAYER: SELECT COLOR ===
-  socket.on('select_color', ({ color }, callback) => {
-    const room = rooms[socket.roomCode];
-    if (!room || room.phase !== 'betting') return;
-
-    const player = room.players.find(p => p.id === socket.id);
-    if (!player) return;
-
-    player.selectedColor = color;
-    player.isReady = true;
-
-    console.log(`[Room] ${room.code} - ${player.name} selected ${color}`);
-    io.to(room.code).emit('room_updated', getRoomState(room));
-    callback?.({ success: true });
-  });
-
-  // === BANKER: DRAW RESULT ===
-  socket.on('draw_result', (callback) => {
-    const room = rooms[socket.roomCode];
-    if (!room || !socket.isBanker || room.phase !== 'betting') return;
-
-    const colors = ['Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple'];
-    const winning = colors[Math.floor(Math.random() * colors.length)];
-    room.winningColor = winning;
-    room.phase = 'result';
-
-    // Calculate winnings
-    const winners = [];
-    const losers = [];
-    room.players.forEach(p => {
-      if (p.selectedColor === winning) {
-        p.credits += 50; // win amount
-        winners.push(p.name);
-      } else if (p.selectedColor) {
-        p.credits -= 20; // lose amount
-        p.credits = Math.max(0, p.credits); // floor at 0
-        losers.push(p.name);
+        if (msg.role === 'banker') {
+          gameState.bankerConnected = true;
+          ws.role = 'banker';
+          gameState.players[id] = { name: 'Banker', balance: 999999, role: 'banker' };
+          sendTo(ws, { type: 'joined', id, role: 'banker' });
+        } else {
+          ws.role = 'player';
+          if (!isRejoining) {
+            gameState.players[id] = { name: msg.name || 'Player', balance: 1000, role: 'player' };
+          } else {
+            gameState.players[id].name = msg.name || gameState.players[id].name;
+          }
+          sendTo(ws, { type: 'joined', id, role: 'player', balance: gameState.players[id].balance });
+        }
+        broadcast(getPublicState());
+        break;
       }
-    });
 
-    // Save to history
-    room.history.unshift({
-      round: room.round,
-      winningColor: winning,
-      winners,
-      losers
-    });
-    if (room.history.length > 10) room.history.pop(); // keep last 10
+      case 'placeBet': {
+        const pid = ws.playerId;
+        if (!pid || !gameState.players[pid]) return;
+        if (gameState.phase !== 'betting') return sendTo(ws, { type: 'error', msg: 'Betting is not open.' });
+        if (gameState.bets[pid]) return sendTo(ws, { type: 'error', msg: 'You already placed a bet.' });
 
-    console.log(`[Room] ${room.code} - Round ${room.round} result: ${winning}`);
-    io.to(room.code).emit('room_updated', getRoomState(room));
-    io.to(room.code).emit('round_result', {
-      winningColor: winning,
-      winners,
-      losers
-    });
-    callback?.({ success: true, winningColor: winning });
-  });
+        const amount = parseInt(msg.amount);
+        const color = msg.color;
+        if (!gameState.colors.includes(color)) return sendTo(ws, { type: 'error', msg: 'Invalid color.' });
+        if (isNaN(amount) || amount < 10) return sendTo(ws, { type: 'error', msg: 'Minimum bet is 10.' });
+        if (gameState.players[pid].balance < amount) return sendTo(ws, { type: 'error', msg: 'Not enough balance.' });
 
-  // === BANKER: RESET ROUND (back to waiting) ===
-  socket.on('reset_round', () => {
-    const room = rooms[socket.roomCode];
-    if (!room || !socket.isBanker) return;
+        gameState.players[pid].balance -= amount;
+        gameState.bets[pid] = { color, amount };
+        sendTo(ws, { type: 'betConfirmed', color, amount, balance: gameState.players[pid].balance });
+        broadcast(getPublicState());
+        break;
+      }
 
-    room.phase = 'waiting';
-    room.winningColor = null;
-    room.players.forEach(p => {
-      p.selectedColor = null;
-      p.isReady = false;
-    });
+      // BANKER ACTIONS
+      case 'startBetting': {
+        if (ws.role !== 'banker') return;
+        gameState.phase = 'betting';
+        gameState.round++;
+        gameState.bets = {};
+        gameState.winningColor = null;
+        const secs = msg.seconds || 30;
+        broadcast({ type: 'phaseChange', phase: 'betting', round: gameState.round });
+        startCountdown(secs, () => {
+          gameState.phase = 'closed';
+          broadcast({ type: 'phaseChange', phase: 'closed' });
+          broadcast(getPublicState());
+        });
+        broadcast(getPublicState());
+        break;
+      }
 
-    io.to(room.code).emit('room_updated', getRoomState(room));
-  });
+      case 'revealColor': {
+        if (ws.role !== 'banker') return;
+        clearInterval(countdownInterval);
+        const winner = msg.color;
+        if (!gameState.colors.includes(winner)) return;
+        gameState.winningColor = winner;
+        gameState.phase = 'reveal';
 
-  // === BANKER: KICK PLAYER ===
-  socket.on('kick_player', ({ playerId }) => {
-    const room = rooms[socket.roomCode];
-    if (!room || !socket.isBanker) return;
+        // Calculate results
+        const results = {};
+        let totalPot = 0;
+        let winnerCount = 0;
+        Object.entries(gameState.bets).forEach(([pid, bet]) => {
+          totalPot += bet.amount;
+          if (bet.color === winner) winnerCount++;
+        });
 
-    room.players = room.players.filter(p => p.id !== playerId);
-    io.to(playerId).emit('kicked');
-    io.to(room.code).emit('room_updated', getRoomState(room));
-  });
+        Object.entries(gameState.bets).forEach(([pid, bet]) => {
+          if (bet.color === winner) {
+            const payout = winnerCount > 0 ? Math.floor((totalPot / winnerCount) * 0.9) : 0; // 10% house
+            gameState.players[pid].balance += (bet.amount + payout);
+            results[pid] = { won: true, payout: bet.amount + payout };
+          } else {
+            results[pid] = { won: false, payout: 0 };
+          }
+        });
 
-  // === DISCONNECT ===
-  socket.on('disconnect', () => {
-    console.log(`[-] Disconnected: ${socket.id}`);
-    const code = socket.roomCode;
-    if (!code || !rooms[code]) return;
+        gameState.history.push({ round: gameState.round, winner, totalPot });
 
-    const room = rooms[code];
+        broadcast({
+          type: 'reveal',
+          winningColor: winner,
+          results,
+          players: Object.entries(gameState.players).map(([id, p]) => ({ id, name: p.name, balance: p.balance })),
+        });
 
-    if (socket.isBanker) {
-      // Banker left - notify all players and close room
-      io.to(code).emit('banker_left');
-      delete rooms[code];
-    } else {
-      // Player left
-      room.players = room.players.filter(p => p.id !== socket.id);
-      io.to(code).emit('room_updated', getRoomState(room));
+        gameState.phase = 'result';
+        broadcast(getPublicState());
+        break;
+      }
+
+      case 'resetGame': {
+        if (ws.role !== 'banker') return;
+        clearInterval(countdownInterval);
+        Object.keys(gameState.players).forEach(pid => {
+          if (gameState.players[pid].role !== 'banker') {
+            gameState.players[pid].balance = 1000;
+          }
+        });
+        gameState.bets = {};
+        gameState.phase = 'waiting';
+        gameState.winningColor = null;
+        broadcast({ type: 'reset' });
+        broadcast(getPublicState());
+        break;
+      }
+
+      case 'addBalance': {
+        if (ws.role !== 'banker') return;
+        const { targetId, amount } = msg;
+        if (gameState.players[targetId]) {
+          gameState.players[targetId].balance += amount;
+          broadcast(getPublicState());
+        }
+        break;
+      }
     }
+  });
+
+  ws.on('close', () => {
+    if (ws.role === 'banker') {
+      gameState.bankerConnected = false;
+    }
+    // Keep player in state for rejoin
+    broadcast(getPublicState());
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🎮 Color Game Server running!`);
-  console.log(`   Local:   http://localhost:${PORT}`);
-  console.log(`   Network: http://<your-local-ip>:${PORT}\n`);
+server.listen(PORT, () => {
+  console.log(`🎮 Color Game server running on port ${PORT}`);
 });

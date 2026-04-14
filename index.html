@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChromaBet — Color Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f8;
+    --muted: #6b6b80;
+    --accent: #ff3c5f;
+    --gold: #ffd166;
+    --teal: #06d6a0;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Animated gradient orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: drift 12s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  .orb-1 { width: 600px; height: 600px; background: #ff3c5f; top: -200px; left: -200px; animation-delay: 0s; }
+  .orb-2 { width: 500px; height: 500px; background: #06d6a0; bottom: -200px; right: -150px; animation-delay: -4s; }
+  .orb-3 { width: 400px; height: 400px; background: #ffd166; top: 40%; left: 40%; animation-delay: -8s; }
+
+  @keyframes drift {
+    0% { transform: translate(0,0) scale(1); }
+    100% { transform: translate(40px, 30px) scale(1.1); }
+  }
+
+  /* Noise overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 2rem;
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .logo-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 14vw, 9rem);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    background: linear-gradient(135deg, #fff 30%, var(--gold) 70%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeUp 0.7s 0.1s ease both;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    animation: fadeUp 0.7s 0.35s ease both;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: 16px;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .card:hover::before { opacity: 1; }
+
+  .card-player::before { background: radial-gradient(circle at top left, rgba(6,214,160,0.12), transparent 70%); }
+  .card-player:hover { border-color: var(--teal); box-shadow: 0 0 30px rgba(6,214,160,0.15); }
+
+  .card-banker::before { background: radial-gradient(circle at top right, rgba(255,209,102,0.12), transparent 70%); }
+  .card-banker:hover { border-color: var(--gold); box-shadow: 0 0 30px rgba(255,209,102,0.15); }
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+  }
+  .card-player .card-title { color: var(--teal); }
+  .card-banker .card-title { color: var(--gold); }
+
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Color dots decoration */
+  .color-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 3rem;
+    animation: fadeUp 0.7s 0.5s ease both;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .dot:nth-child(1) { background: #ff3c5f; animation-delay: 0s; }
+  .dot:nth-child(2) { background: #3b82f6; animation-delay: 0.2s; }
+  .dot:nth-child(3) { background: #06d6a0; animation-delay: 0.4s; }
+  .dot:nth-child(4) { background: #ffd166; animation-delay: 0.6s; }
+  .dot:nth-child(5) { background: #a855f7; animation-delay: 0.8s; }
+  .dot:nth-child(6) { background: #f97316; animation-delay: 1s; }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.4); opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 1.5rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    z-index: 10;
+    animation: fadeUp 1s 0.8s ease both;
+  }
+
+  @media (max-width: 480px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="container">
+  <p class="logo-eyebrow">✦ Multiplayer Color Betting</p>
+  <h1>Chroma<br>Bet</h1>
+  <p class="subtitle">Pick your color. Beat the house. Outlast everyone.</p>
+
+  <div class="cards">
+    <a href="game.html" class="card card-player">
+      <span class="card-icon">🎮</span>
+      <div class="card-title">Player</div>
+      <p class="card-desc">Join the game, place your bets, and compete against others in real time.</p>
+    </a>
+    <a href="banker.html" class="card card-banker">
+      <span class="card-icon">🏦</span>
+      <div class="card-title">Banker</div>
+      <p class="card-desc">Control the rounds, reveal the winning color, and manage the game flow.</p>
+    </a>
+  </div>
+
+  <div class="color-dots">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>
+
+<p class="footer">Open on multiple devices to play together</p>
+
+</body>
+</html>

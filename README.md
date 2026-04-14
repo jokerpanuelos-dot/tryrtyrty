@@ -1,152 +1,176 @@
-# 🎲 Color Game — Banker Edition
+# ChromaBet — Multiplayer Color Game
 
-A real-time multiplayer color guessing game with a Banker host. Built with Node.js, Express, and Socket.io.
-
----
-
-## 📁 Project Structure
-
-```
-color-game/
-├── server.js           ← Node.js backend (Express + Socket.io)
-├── package.json
-├── public/
-│   ├── index.html      ← Main HTML (all screens)
-│   ├── css/
-│   │   └── style.css   ← Styles
-│   └── js/
-│       └── app.js      ← Client-side game logic
-└── README.md
-```
+A real-time multiplayer color betting game with WebSocket support.
+Players bet on colors, the Banker controls the game and reveals the winner.
 
 ---
 
-## 🚀 Local Setup
+## 🚀 Hostinger Deployment (VPS or Node.js Hosting)
 
-### Prerequisites
-- Node.js v16 or higher — download at https://nodejs.org
+### Requirements
+- Node.js 16+ installed on your server
+- A VPS or Hostinger plan that supports Node.js apps
 
-### Steps
+---
+
+### Step 1: Upload Files
+
+Upload the entire `colorgame` folder to your Hostinger server.
+You can use the File Manager, FTP, or SSH.
+
+Recommended path: `/home/u12345678/colorgame/` (use your actual username)
+
+---
+
+### Step 2: Install Dependencies
+
+SSH into your server and run:
 
 ```bash
-# 1. Go into the project folder
-cd color-game
-
-# 2. Install dependencies
+cd /path/to/colorgame
 npm install
-
-# 3. Start the server
-npm start
 ```
 
-The server will start and print:
-```
-🎮 Color Game Server running!
-   Local:   http://localhost:3000
-   Network: http://192.168.x.x:3000
-```
+This installs the `ws` (WebSocket) package.
 
 ---
 
-## 🌐 Playing Over Local WiFi (Multiple Devices)
+### Step 3: Configure WebSocket URL
 
-1. Make sure all devices are connected to the **same WiFi network**.
-2. Find your computer's local IP address:
-   - **Windows**: Open Command Prompt → type `ipconfig` → look for `IPv4 Address`
-   - **Mac/Linux**: Open Terminal → type `ifconfig` or `ip addr` → look for `inet` address
-3. On other devices, open a browser and go to:
-   ```
-   http://192.168.x.x:3000
-   ```
-   *(replace with your actual IP)*
+By default, the game connects to:
+```
+ws://YOUR_SERVER_IP:3000
+```
+
+You need to update the `WS_URL` in both `game.html` and `banker.html`.
+
+**Option A — Using IP directly** (quick setup):
+Find these lines in both files:
+```javascript
+const WS_URL = `ws://${location.hostname}:3000`;
+```
+This auto-detects the hostname — works if you're running everything from the same server.
+
+**Option B — Using a domain** (recommended for production):
+Replace with:
+```javascript
+const WS_URL = 'wss://yourdomain.com/ws';  // Use wss:// for HTTPS
+```
+Then configure Nginx to proxy WebSocket traffic (see Step 6).
 
 ---
 
-## 🎮 How to Play
-
-1. **Banker** opens the game and clicks **"Create Room as Banker"**.
-2. **Players** click **"Join Room as Player"** and enter the 4-letter room code.
-3. Banker clicks **▶ Start Round** to begin.
-4. Players choose a color before the banker draws.
-5. Banker clicks **🎲 Draw Color** to reveal the winning color.
-6. Winners get **+50 credits**, losers lose **-20 credits**.
-7. Banker clicks **↩ New Round** to play again.
-
----
-
-## ☁️ Deploying to Hostinger
-
-### Option A: Node.js Hosting (Recommended)
-
-1. **Log in to Hostinger** → Go to **hPanel**.
-2. Select or purchase a **Business** or higher hosting plan (supports Node.js).
-3. Go to **Hosting → Manage → Node.js**.
-4. Set:
-   - **Node.js version**: 18.x or higher
-   - **Application root**: your upload folder (e.g., `public_html/color-game`)
-   - **Application startup file**: `server.js`
-5. Upload all project files via **File Manager** or **FTP** (using FileZilla).
-6. In the Node.js panel, click **Install dependencies** (runs `npm install`).
-7. Click **Restart application**.
-8. Your game will be live at your domain or subdomain.
-
-> 💡 **Tip**: Set the PORT in your app using `process.env.PORT` — already done in server.js.
-
-### Option B: VPS Hosting
-
-If you have a Hostinger VPS:
+### Step 4: Start the Server
 
 ```bash
-# SSH into your VPS
-ssh root@your-vps-ip
+node server.js
+```
 
-# Install Node.js
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt install -y nodejs
+Or run it in the background:
+```bash
+nohup node server.js > game.log 2>&1 &
+```
 
-# Upload your files (via FTP or git)
-cd /var/www/color-game
-
-# Install and start
-npm install
-npm start
-
-# Optional: Keep alive with PM2
+To run as a service (recommended), use PM2:
+```bash
 npm install -g pm2
-pm2 start server.js --name color-game
+pm2 start server.js --name chromabet
 pm2 save
 pm2 startup
 ```
 
 ---
 
-## 🔧 Configuration
+### Step 5: Open Firewall Port
 
-You can change these values in `server.js`:
+Make sure port 3000 is open on your Hostinger VPS:
+```bash
+ufw allow 3000
+```
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| PORT | 3000 | Server port |
-| Starting credits | 100 | Each player starts with this |
-| Win amount | +50 | Credits won per round |
-| Lose amount | -20 | Credits lost per round |
+Or configure it in the Hostinger firewall settings panel.
 
 ---
 
-## 🔥 Future Enhancements (Optional)
+### Step 6 (Optional): Nginx Reverse Proxy + HTTPS
 
-- ⏱ **Timer per round** — Auto-draw after countdown
-- 💸 **Custom bet amounts** — Let players choose how much to wager
-- 🔊 **Sound effects** — Win/lose audio feedback
-- ✨ **Animations** — Color reveal effects
-- 📊 **Leaderboard** — Rank players by credits
-- 🔒 **Room passwords** — Private rooms
+If you have a domain and SSL, add this to your Nginx config:
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        root /path/to/colorgame;
+        index index.html;
+        try_files $uri $uri/ =404;
+    }
+
+    location /ws {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+}
+```
+
+Then update WS_URL in the HTML files to:
+```javascript
+const WS_URL = 'wss://yourdomain.com/ws';
+```
 
 ---
 
-## 🛠 Tech Stack
+## 🎮 How to Play
 
-- **Backend**: Node.js + Express
-- **Real-time**: Socket.io
-- **Frontend**: Vanilla HTML/CSS/JavaScript
-- **Storage**: In-memory only (no database)
+### Banker
+1. Open `http://yourserver/banker.html` on one device
+2. Click **▶ Start Betting** to begin a round (set your timer)
+3. Watch players place their bets in real time
+4. After time's up (or manually close), select the winning color
+5. Click **🎲 Reveal Selected Color** to announce the winner
+6. Use **↺ Reset Game** to start fresh
+
+### Players
+1. Open `http://yourserver/game.html` (or `index.html` → Player)
+2. Enter your name and join
+3. When betting opens, click a color and enter your bet amount
+4. Watch the countdown — bets lock when time runs out
+5. The Banker reveals the winner — winners split 90% of the pot!
+
+---
+
+## 💰 Game Rules
+
+- Each player starts with **₱1,000**
+- Minimum bet: **₱10**
+- Winners split **90% of the total pot** proportionally (10% house edge)
+- The Banker can add balance to any player at any time
+- Player balances persist for the session (reconnect by name)
+
+---
+
+## 📁 File Structure
+
+```
+colorgame/
+├── index.html      ← Landing page (choose Player or Banker)
+├── game.html       ← Player game interface
+├── banker.html     ← Banker control panel
+├── server.js       ← Node.js WebSocket + HTTP server
+├── package.json    ← Dependencies
+└── README.md       ← This file
+```
+
+---
+
+## 🔧 Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| PORT     | 3000    | Server port |
+
+Set with: `PORT=8080 node server.js`
