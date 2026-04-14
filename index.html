@@ -6,238 +6,1940 @@
 <title>ChromaBet — Color Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0f; --surface: #111118; --surface2: #17171f;
+  --border: rgba(255,255,255,0.07); --text: #f0f0f8; --muted: #6b6b80;
+  --accent: #ff3c5f; --gold: #ffd166; --teal: #06d6a0;
+  --c-red:#ef4444; --c-blue:#3b82f6; --c-green:#22c55e;
+  --c-yellow:#eab308; --c-purple:#a855f7; --c-orange:#f97316;
+}
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
 
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --border: rgba(255,255,255,0.07);
-    --text: #f0f0f8;
-    --muted: #6b6b80;
-    --accent: #ff3c5f;
-    --gold: #ffd166;
-    --teal: #06d6a0;
-  }
+/* ─── LANDING ─── */
+#screen-landing {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; padding:2rem; position:relative; overflow:hidden;
+}
+.orb { position:fixed; border-radius:50%; filter:blur(80px); opacity:0.15; animation:drift 12s ease-in-out infinite alternate; pointer-events:none; }
+.orb-1 { width:600px;height:600px;background:#ff3c5f;top:-200px;left:-200px;animation-delay:0s; }
+.orb-2 { width:500px;height:500px;background:#06d6a0;bottom:-200px;right:-150px;animation-delay:-4s; }
+.orb-3 { width:400px;height:400px;background:#ffd166;top:40%;left:40%;animation-delay:-8s; }
+@keyframes drift { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(40px,30px) scale(1.1);} }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-  }
+.landing-inner { position:relative;z-index:10;text-align:center;max-width:580px;width:100%; }
+.logo-eyebrow { font-size:0.75rem;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;animation:fadeUp 0.6s ease both; }
+h1.logo-title { font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,14vw,9rem);line-height:0.9;letter-spacing:0.02em;background:linear-gradient(135deg,#fff 30%,var(--gold) 70%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:fadeUp 0.7s 0.1s ease both;margin-bottom:0.5rem; }
+.subtitle { font-size:1.1rem;color:var(--muted);font-weight:300;margin-bottom:2.5rem;animation:fadeUp 0.7s 0.2s ease both; }
 
-  /* Animated gradient orbs */
-  .orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.15;
-    animation: drift 12s ease-in-out infinite alternate;
-    pointer-events: none;
-  }
-  .orb-1 { width: 600px; height: 600px; background: #ff3c5f; top: -200px; left: -200px; animation-delay: 0s; }
-  .orb-2 { width: 500px; height: 500px; background: #06d6a0; bottom: -200px; right: -150px; animation-delay: -4s; }
-  .orb-3 { width: 400px; height: 400px; background: #ffd166; top: 40%; left: 40%; animation-delay: -8s; }
+.mode-cards { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;animation:fadeUp 0.7s 0.35s ease both; }
+.mode-card { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem 1.25rem;cursor:pointer;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;position:relative;overflow:hidden; }
+.mode-card::before { content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.3s;border-radius:16px; }
+.mode-card:hover { transform:translateY(-4px); }
+.mode-card:hover::before { opacity:1; }
+.card-player::before { background:radial-gradient(circle at top left,rgba(6,214,160,0.12),transparent 70%); }
+.card-player:hover { border-color:var(--teal);box-shadow:0 0 30px rgba(6,214,160,0.15); }
+.card-banker::before { background:radial-gradient(circle at top right,rgba(255,209,102,0.12),transparent 70%); }
+.card-banker:hover { border-color:var(--gold);box-shadow:0 0 30px rgba(255,209,102,0.15); }
+.card-bot::before { background:radial-gradient(circle at bottom,rgba(255,60,95,0.12),transparent 70%); }
+.card-bot:hover { border-color:var(--accent);box-shadow:0 0 30px rgba(255,60,95,0.15); }
+.card-icon { font-size:2.2rem;margin-bottom:0.5rem;display:block; }
+.card-title { font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;margin-bottom:0.3rem; }
+.card-player .card-title { color:var(--teal); }
+.card-banker .card-title { color:var(--gold); }
+.card-bot .card-title { color:var(--accent); }
+.card-desc { font-size:0.78rem;color:var(--muted);line-height:1.5; }
+.card-full { grid-column:1/-1; }
 
-  @keyframes drift {
-    0% { transform: translate(0,0) scale(1); }
-    100% { transform: translate(40px, 30px) scale(1.1); }
-  }
+.color-dots { display:flex;justify-content:center;gap:0.6rem;margin-top:1.5rem;animation:fadeUp 0.7s 0.5s ease both; }
+.dot { width:10px;height:10px;border-radius:50%;animation:pulse 2s ease-in-out infinite; }
+.dot:nth-child(1){background:#ff3c5f;animation-delay:0s}
+.dot:nth-child(2){background:#3b82f6;animation-delay:.2s}
+.dot:nth-child(3){background:#22c55e;animation-delay:.4s}
+.dot:nth-child(4){background:#ffd166;animation-delay:.6s}
+.dot:nth-child(5){background:#a855f7;animation-delay:.8s}
+.dot:nth-child(6){background:#f97316;animation-delay:1s}
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:0.7} 50%{transform:scale(1.4);opacity:1} }
 
-  /* Noise overlay */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    opacity: 0.4;
-  }
+/* ─── LOBBY ─── */
+#screen-lobby { min-height:100vh;display:none;align-items:center;justify-content:center;padding:2rem; }
+.lobby-box { background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:440px; }
+.lobby-box h2 { font-family:'Bebas Neue',sans-serif;font-size:2.2rem;margin-bottom:0.3rem; }
+.lobby-box p { color:var(--muted);font-size:0.9rem;margin-bottom:1.75rem; }
+.inp { width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.85rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;margin-bottom:0.75rem;outline:none;transition:border-color 0.2s; }
+.inp:focus { border-color:var(--teal); }
+.inp.gold:focus { border-color:var(--gold); }
+.room-display { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center;margin-bottom:1rem; }
+.room-id-big { font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--gold);letter-spacing:0.2em; }
+.room-share-hint { font-size:0.78rem;color:var(--muted);margin-top:0.3rem; }
+.divider { text-align:center;color:var(--muted);font-size:0.8rem;margin:0.75rem 0;position:relative; }
+.divider::before,.divider::after { content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border); }
+.divider::before { left:0; } .divider::after { right:0; }
 
-  .container {
-    position: relative;
-    z-index: 10;
-    text-align: center;
-    padding: 2rem;
-    max-width: 560px;
-    width: 100%;
-  }
+/* ─── BUTTONS ─── */
+.btn { width:100%;padding:0.9rem;border:none;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.05em;cursor:pointer;transition:transform 0.15s,opacity 0.15s;margin-bottom:0.5rem; }
+.btn:last-child { margin-bottom:0; }
+.btn:hover:not(:disabled) { transform:translateY(-2px); }
+.btn:active:not(:disabled) { transform:scale(0.97); }
+.btn:disabled { opacity:0.4;cursor:not-allowed;transform:none; }
+.btn-teal { background:var(--teal);color:#0a0a0f; }
+.btn-gold { background:var(--gold);color:#0a0a0f; }
+.btn-accent { background:var(--accent);color:#fff; }
+.btn-muted { background:var(--surface2);color:var(--muted);border:1px solid var(--border); }
+.btn-orange { background:#f97316;color:#fff; }
+.btn-sm { width:auto;padding:0.4rem 1rem;font-size:1rem;margin:0; }
+.btn-back { background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;padding:0;margin-top:1rem; }
+.btn-back:hover { color:var(--text); }
 
-  .logo-eyebrow {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 1rem;
-    animation: fadeUp 0.6s ease both;
-  }
+/* ─── GAME SCREEN ─── */
+#screen-game { display:none;flex-direction:column;min-height:100vh; }
+.topbar { display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;gap:0.5rem; }
+.topbar-left { display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap; }
+.logo-sm { font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--teal); }
+.badge { padding:0.2rem 0.65rem;border-radius:20px;font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase; }
+.badge-waiting{background:rgba(107,107,128,0.2);color:var(--muted)}
+.badge-betting{background:rgba(6,214,160,0.2);color:var(--teal)}
+.badge-closed{background:rgba(255,60,95,0.2);color:var(--accent)}
+.badge-result{background:rgba(255,209,102,0.2);color:var(--gold)}
+.room-chip { background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:0.2rem 0.75rem;font-size:0.75rem;color:var(--muted);cursor:pointer;transition:border-color 0.2s; }
+.room-chip:hover { border-color:var(--gold);color:var(--gold); }
+.room-chip span { color:var(--gold);font-weight:600; }
+.balance-chip { background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:0.25rem 0.85rem;font-size:0.85rem;font-weight:600; }
+.balance-chip span { color:var(--gold); }
 
-  h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(5rem, 14vw, 9rem);
-    line-height: 0.9;
-    letter-spacing: 0.02em;
-    background: linear-gradient(135deg, #fff 30%, var(--gold) 70%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: fadeUp 0.7s 0.1s ease both;
-    margin-bottom: 0.5rem;
-  }
+.game-body { flex:1;display:grid;grid-template-columns:1fr 280px; }
+.game-center { padding:1.25rem;display:flex;flex-direction:column;gap:1.25rem;overflow-y:auto; }
+.sidebar { border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow-y:auto; }
 
-  .subtitle {
-    font-size: 1.1rem;
-    color: var(--muted);
-    font-weight: 300;
-    margin-bottom: 3rem;
-    animation: fadeUp 0.7s 0.2s ease both;
-  }
+/* Phase header */
+.phase-header { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-align:center; }
+.phase-header h2 { font-family:'Bebas Neue',sans-serif;font-size:2rem;margin-bottom:0.25rem; }
+.phase-header p { color:var(--muted);font-size:0.85rem; }
+.countdown-big { font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:1;color:var(--gold); }
+.countdown-big.urgent { color:var(--accent);animation:blink 0.5s step-end infinite; }
+@keyframes blink { 50%{opacity:0.4} }
+.waiting-spin { font-size:1.8rem;animation:spin 2s linear infinite;display:inline-block; }
+@keyframes spin { to{transform:rotate(360deg)} }
 
-  .cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    animation: fadeUp 0.7s 0.35s ease both;
-  }
+/* Color grid */
+.color-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem; }
+.color-btn { aspect-ratio:1;border-radius:16px;border:3px solid transparent;cursor:pointer;position:relative;overflow:hidden;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.3rem;padding:0.5rem; }
+.color-btn:hover:not(:disabled){transform:scale(1.05)}
+.color-btn:disabled{cursor:not-allowed;opacity:0.6}
+.color-btn.selected{border-color:white;box-shadow:0 0 30px rgba(255,255,255,0.3);transform:scale(1.07)}
+.color-btn.winner{border-color:var(--gold)!important;box-shadow:0 0 40px rgba(255,209,102,0.5)!important;animation:winPulse 0.5s ease 4}
+.color-btn.loser{opacity:0.3;filter:grayscale(0.5)}
+@keyframes winPulse{0%,100%{transform:scale(1.07)}50%{transform:scale(1.17)}}
+.color-btn[data-color="Red"]{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.color-btn[data-color="Blue"]{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+.color-btn[data-color="Green"]{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.color-btn[data-color="Yellow"]{background:linear-gradient(135deg,#eab308,#ca8a04)}
+.color-btn[data-color="Purple"]{background:linear-gradient(135deg,#a855f7,#9333ea)}
+.color-btn[data-color="Orange"]{background:linear-gradient(135deg,#f97316,#ea580c)}
+.color-btn .cname{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:white;text-shadow:0 1px 4px rgba(0,0,0,0.4);letter-spacing:0.05em}
+.color-btn .cinfo{font-size:0.62rem;background:rgba(0,0,0,0.3);border-radius:8px;padding:0.1rem 0.4rem;color:rgba(255,255,255,0.9);line-height:1.5;text-align:center}
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem 1.5rem;
-    cursor: pointer;
-    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    position: relative;
-    overflow: hidden;
-  }
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.3s;
-    border-radius: 16px;
-  }
-  .card:hover { transform: translateY(-4px); }
-  .card:hover::before { opacity: 1; }
+/* Bet form */
+.bet-form{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;display:none}
+.bet-form h3{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--muted);margin-bottom:0.75rem}
+.quick-bets{display:flex;gap:0.4rem;margin-bottom:0.75rem;flex-wrap:wrap}
+.qbet{padding:0.3rem 0.65rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;cursor:pointer;transition:background 0.15s;font-family:'DM Sans',sans-serif}
+.qbet:hover{background:rgba(255,255,255,0.1)}
+.bet-row{display:flex;gap:0.5rem}
+.bet-row .inp{margin-bottom:0;flex:1}
+.sel-color-info{padding:0.45rem 0.75rem;border-radius:8px;font-size:0.82rem;font-weight:600;margin-bottom:0.75rem;display:none}
+.my-bet-display{margin-top:0.75rem;padding:0.65rem;background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.3);border-radius:10px;font-size:0.85rem;color:var(--teal);display:none;text-align:center}
 
-  .card-player::before { background: radial-gradient(circle at top left, rgba(6,214,160,0.12), transparent 70%); }
-  .card-player:hover { border-color: var(--teal); box-shadow: 0 0 30px rgba(6,214,160,0.15); }
+/* Result */
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-align:center;display:none}
+.result-card.win{border-color:var(--teal);background:rgba(6,214,160,0.07)}
+.result-card.lose{border-color:var(--accent);background:rgba(255,60,95,0.07)}
+.result-card.nobet{border-color:var(--muted)}
+.result-card h3{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;margin-bottom:0.25rem}
+.result-card.win h3{color:var(--teal)}
+.result-card.lose h3{color:var(--accent)}
+.result-card.nobet h3{color:var(--muted)}
+.result-payout{font-family:'Bebas Neue',sans-serif;font-size:1.8rem}
+.result-detail{font-size:0.78rem;color:var(--muted);margin-top:0.4rem}
 
-  .card-banker::before { background: radial-gradient(circle at top right, rgba(255,209,102,0.12), transparent 70%); }
-  .card-banker:hover { border-color: var(--gold); box-shadow: 0 0 30px rgba(255,209,102,0.15); }
+/* Sidebar sections */
+.sidebar-section{padding:0.9rem;border-bottom:1px solid var(--border)}
+.sidebar-section h4{font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:0.6rem}
+.player-item{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0.6rem;background:var(--surface2);border-radius:8px;font-size:0.78rem;gap:0.3rem;margin-bottom:0.35rem}
+.player-item .pname{font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-item .pbal{color:var(--gold);white-space:nowrap;font-size:0.74rem}
+.player-item .pbet{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.player-item .pbet.has{background:var(--teal)}
+.history-list{display:flex;flex-direction:column;gap:0.3rem;max-height:200px;overflow-y:auto}
+.hist-item{display:flex;align-items:center;gap:0.35rem;font-size:0.74rem;padding:0.3rem 0.45rem;background:var(--surface2);border-radius:6px}
+.hist-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.hist-dot.Red{background:#ef4444}.hist-dot.Blue{background:#3b82f6}.hist-dot.Green{background:#22c55e}
+.hist-dot.Yellow{background:#eab308}.hist-dot.Purple{background:#a855f7}.hist-dot.Orange{background:#f97316}
 
-  .card-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.75rem;
-    display: block;
-  }
-  .card-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.4rem;
-  }
-  .card-player .card-title { color: var(--teal); }
-  .card-banker .card-title { color: var(--gold); }
+/* ─── BANKER PANEL ─── */
+#screen-banker { display:none;flex-direction:column;min-height:100vh; }
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem}
+.stat-box{background:var(--surface2);border-radius:12px;padding:1rem;text-align:center}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);line-height:1}
+.stat-lbl{font-size:0.65rem;color:var(--muted);margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.05em}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1rem}
+.card h3{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.9rem}
+.controls-row{display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center}
+.timer-select{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.7rem 0.9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none}
+.color-reveal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.65rem;margin-bottom:0.9rem}
+.crb{padding:0.85rem 0.5rem;border:3px solid transparent;border-radius:12px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:white;text-shadow:0 1px 4px rgba(0,0,0,0.4);transition:transform 0.15s,border-color 0.2s,box-shadow 0.2s;display:flex;flex-direction:column;align-items:center;gap:0.25rem}
+.crb:hover:not(:disabled){transform:scale(1.05)}
+.crb:disabled{opacity:0.4;cursor:not-allowed}
+.crb.selected{border-color:white;box-shadow:0 0 20px rgba(255,255,255,0.3);transform:scale(1.06)}
+.crb.Red{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.crb.Blue{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+.crb.Green{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.crb.Yellow{background:linear-gradient(135deg,#eab308,#ca8a04)}
+.crb.Purple{background:linear-gradient(135deg,#a855f7,#9333ea)}
+.crb.Orange{background:linear-gradient(135deg,#f97316,#ea580c)}
+.crb-info{font-size:0.62rem;background:rgba(0,0,0,0.3);border-radius:6px;padding:0.1rem 0.4rem;line-height:1.4;text-align:center}
+.dist-row{margin-bottom:0.55rem}
+.dist-label{display:flex;justify-content:space-between;margin-bottom:0.2rem;font-size:0.75rem;align-items:center}
+.dist-bar-bg{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.dist-bar-fill{height:100%;border-radius:4px;transition:width 0.4s}
+.banker-bal-box{background:rgba(6,214,160,0.08);border:1px solid rgba(6,214,160,0.25);border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.75rem}
+.banker-bal-lbl{font-size:0.65rem;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem}
+.banker-bal-val{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--teal);line-height:1}
+.banker-change{font-size:0.75rem;margin-top:0.15rem}
+.player-row{display:flex;align-items:center;justify-content:space-between;padding:0.45rem 0.6rem;background:var(--surface2);border-radius:8px;margin-bottom:0.35rem;font-size:0.78rem;gap:0.3rem}
+.player-row .pname{font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-row .pbal{color:var(--gold);white-space:nowrap;font-size:0.74rem}
+.pbet-tag{font-size:0.6rem;padding:0.1rem 0.35rem;border-radius:5px;background:rgba(6,214,160,0.15);color:var(--teal);display:none;white-space:nowrap}
+.pbet-tag.vis{display:inline}
+.add-bal-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:0.65rem;padding:0.1rem 0.4rem;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.add-bal-btn:hover{color:var(--gold);border-color:var(--gold)}
 
-  .card-desc {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.5;
-  }
+/* ─── BOT MODE ─── */
+#screen-bot{display:none;flex-direction:column;min-height:100vh}
+.bot-banner{background:linear-gradient(135deg,rgba(255,60,95,0.15),rgba(255,209,102,0.1));border-bottom:1px solid rgba(255,60,95,0.2);padding:0.5rem 1.25rem;font-size:0.78rem;color:var(--accent);display:flex;align-items:center;gap:0.5rem}
+.bot-pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:botPulse 1s ease-in-out infinite}
+@keyframes botPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+.difficulty-badges{display:flex;gap:0.5rem;flex-wrap:wrap}
+.diff-badge{padding:0.25rem 0.75rem;border-radius:20px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;border:1px solid transparent;transition:all 0.2s}
+.diff-badge.easy{background:rgba(6,214,160,0.15);color:var(--teal);border-color:rgba(6,214,160,0.3)}
+.diff-badge.medium{background:rgba(255,209,102,0.15);color:var(--gold);border-color:rgba(255,209,102,0.3)}
+.diff-badge.hard{background:rgba(255,60,95,0.15);color:var(--accent);border-color:rgba(255,60,95,0.3)}
+.diff-badge.active{transform:scale(1.07)}
+.diff-badge.easy.active{background:rgba(6,214,160,0.3)}
+.diff-badge.medium.active{background:rgba(255,209,102,0.3)}
+.diff-badge.hard.active{background:rgba(255,60,95,0.3)}
 
-  /* Color dots decoration */
-  .color-dots {
-    display: flex;
-    justify-content: center;
-    gap: 0.6rem;
-    margin-top: 3rem;
-    animation: fadeUp 0.7s 0.5s ease both;
-  }
-  .dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  .dot:nth-child(1) { background: #ff3c5f; animation-delay: 0s; }
-  .dot:nth-child(2) { background: #3b82f6; animation-delay: 0.2s; }
-  .dot:nth-child(3) { background: #06d6a0; animation-delay: 0.4s; }
-  .dot:nth-child(4) { background: #ffd166; animation-delay: 0.6s; }
-  .dot:nth-child(5) { background: #a855f7; animation-delay: 0.8s; }
-  .dot:nth-child(6) { background: #f97316; animation-delay: 1s; }
+/* ─── DICE ANIMATION ─── */
+.dice-container{display:flex;justify-content:center;gap:1rem;margin:1rem 0;min-height:90px;align-items:center}
+.die{width:80px;height:80px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:bold;color:white;text-shadow:0 2px 4px rgba(0,0,0,0.4);position:relative;transform-style:preserve-3d;box-shadow:0 8px 24px rgba(0,0,0,0.4);transition:background 0.3s}
+.die.rolling{animation:diceRoll 0.5s ease-in-out infinite}
+@keyframes diceRoll{
+  0%{transform:rotate(0deg) scale(1)}
+  25%{transform:rotate(15deg) scale(1.05)}
+  50%{transform:rotate(-10deg) scale(0.95) translateY(-5px)}
+  75%{transform:rotate(8deg) scale(1.02)}
+  100%{transform:rotate(0deg) scale(1)}
+}
+.die.landed{animation:dieLand 0.4s cubic-bezier(0.34,1.56,0.64,1) both}
+@keyframes dieLand{from{transform:scale(0.5) rotate(30deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
 
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.7; }
-    50% { transform: scale(1.4); opacity: 1; }
-  }
+/* ─── REVEAL OVERLAY ─── */
+.reveal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;z-index:999}
+.reveal-box{text-align:center;animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;padding:2rem}
+@keyframes popIn{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+.reveal-circle{width:160px;height:160px;border-radius:50%;margin:0 auto 1.25rem;box-shadow:0 0 80px rgba(255,255,255,0.3);animation:revSpin 0.8s ease both}
+@keyframes revSpin{from{transform:scale(0) rotate(180deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
+.reveal-box h2{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;color:white;margin-bottom:0.5rem}
+.reveal-result{font-family:'Bebas Neue',sans-serif;font-size:2rem;margin-bottom:0.25rem}
+.reveal-result.win{color:var(--teal)}.reveal-result.lose{color:var(--accent)}
+.reveal-sub{color:var(--muted);font-size:0.9rem}
+.reveal-hint{margin-top:1.25rem;color:var(--muted);font-size:0.75rem}
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.65rem 1.25rem;font-size:0.85rem;z-index:1000;transition:transform 0.3s;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--teal);color:var(--teal)}
+.toast.error{border-color:var(--accent);color:var(--accent)}
+.toast.info{border-color:var(--gold);color:var(--gold)}
 
-  .footer {
-    position: fixed;
-    bottom: 1.5rem;
-    color: var(--muted);
-    font-size: 0.75rem;
-    z-index: 10;
-    animation: fadeUp 1s 0.8s ease both;
-  }
+/* ─── MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:998;padding:1rem}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;max-width:400px;width:100%;text-align:center}
+.modal-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);margin-bottom:0.5rem}
+.modal-box p{color:var(--muted);font-size:0.88rem;margin-bottom:1.25rem}
 
-  @media (max-width: 480px) {
-    .cards { grid-template-columns: 1fr; }
-  }
+/* ─── UTILS ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.conn-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:0.35rem;vertical-align:middle}
+.conn-dot.on{background:var(--teal);box-shadow:0 0 6px var(--teal)}
+.conn-dot.off{background:var(--accent)}
+.link-text{color:var(--gold);cursor:pointer;text-decoration:underline}
+.banker-tag{background:rgba(255,209,102,0.15);color:var(--gold);border:1px solid rgba(255,209,102,0.3);border-radius:20px;padding:0.2rem 0.7rem;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+.bot-tag{background:rgba(255,60,95,0.15);color:var(--accent);border:1px solid rgba(255,60,95,0.3);border-radius:20px;padding:0.2rem 0.7rem;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+
+@media(max-width:700px){
+  .game-body,.banker-layout{grid-template-columns:1fr!important}
+  .sidebar,.banker-sidebar{border-left:none!important;border-top:1px solid var(--border)}
+  .color-grid{grid-template-columns:repeat(3,1fr)}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .mode-cards{grid-template-columns:1fr}
+  .card-full{grid-column:auto}
+  .color-reveal-grid{grid-template-columns:repeat(3,1fr)}
+}
 </style>
 </head>
 <body>
 
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
-
-<div class="container">
-  <p class="logo-eyebrow">✦ Multiplayer Color Betting</p>
-  <h1>Chroma<br>Bet</h1>
-  <p class="subtitle">Pick your color. Beat the house. Outlast everyone.</p>
-
-  <div class="cards">
-    <a href="game.html" class="card card-player">
-      <span class="card-icon">🎮</span>
-      <div class="card-title">Player</div>
-      <p class="card-desc">Join the game, place your bets, and compete against others in real time.</p>
-    </a>
-    <a href="banker.html" class="card card-banker">
-      <span class="card-icon">🏦</span>
-      <div class="card-title">Banker</div>
-      <p class="card-desc">Control the rounds, reveal the winning color, and manage the game flow.</p>
-    </a>
-  </div>
-
-  <div class="color-dots">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
+<!-- ─── LANDING ─── -->
+<div id="screen-landing">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="landing-inner">
+    <p class="logo-eyebrow">✦ Multiplayer Color Betting</p>
+    <h1 class="logo-title">Chroma<br>Bet</h1>
+    <p class="subtitle">Pick your color. Beat the house. Outlast everyone.</p>
+    <div class="mode-cards">
+      <div class="mode-card card-player" onclick="showLobby('player')">
+        <span class="card-icon">🎮</span>
+        <div class="card-title">Player</div>
+        <p class="card-desc">Join a banker's table using a Room ID. Place bets and compete in real time.</p>
+      </div>
+      <div class="mode-card card-banker" onclick="showLobby('banker')">
+        <span class="card-icon">🏦</span>
+        <div class="card-title">Banker</div>
+        <p class="card-desc">Create a room, share your Room ID, and control the game flow.</p>
+      </div>
+      <div class="mode-card card-bot card-full" onclick="showLobby('bot')">
+        <span class="card-icon">🤖</span>
+        <div class="card-title">Play vs Bot Banker</div>
+        <p class="card-desc">No friends needed — jump in solo. Choose Easy, Medium, or Hard difficulty and play against our automated banker with real-time dice action!</p>
+      </div>
+    </div>
+    <div class="color-dots">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
   </div>
 </div>
 
-<p class="footer">Open on multiple devices to play together</p>
+<!-- ─── LOBBY ─── -->
+<div id="screen-lobby" style="display:flex">
+  <div class="lobby-box">
+    <h2 id="lobby-title">Join a Game</h2>
+    <p id="lobby-desc">Enter your name and a Room ID to join a banker's table.</p>
+
+    <!-- Player join -->
+    <div id="lobby-player">
+      <input type="text" id="player-name" class="inp" placeholder="Your name..." maxlength="20" autocomplete="off">
+      <input type="text" id="join-room-id" class="inp" placeholder="Room ID (e.g. ABCD12)..." maxlength="8" autocomplete="off" style="text-transform:uppercase">
+      <button class="btn btn-teal" onclick="joinAsPlayer()">Join Table →</button>
+    </div>
+
+    <!-- Banker create -->
+    <div id="lobby-banker" style="display:none">
+      <input type="text" id="banker-name" class="inp gold" placeholder="Banker name (optional)..." maxlength="20" autocomplete="off" value="Banker">
+      <button class="btn btn-gold" onclick="createRoom()">Create Room →</button>
+    </div>
+
+    <!-- Bot mode -->
+    <div id="lobby-bot" style="display:none">
+      <input type="text" id="bot-player-name" class="inp" placeholder="Your name..." maxlength="20" autocomplete="off">
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem">Choose difficulty:</p>
+      <div class="difficulty-badges" style="justify-content:center;margin-bottom:1rem">
+        <div class="diff-badge easy active" onclick="setDifficulty('easy')">🟢 Easy</div>
+        <div class="diff-badge medium" onclick="setDifficulty('medium')">🟡 Medium</div>
+        <div class="diff-badge hard" onclick="setDifficulty('hard')">🔴 Hard</div>
+      </div>
+      <button class="btn btn-accent" onclick="startBotGame()">Play Now →</button>
+    </div>
+
+    <button class="btn-back" onclick="goLanding()">← Back</button>
+  </div>
+</div>
+
+<!-- ─── GAME SCREEN (player vs real banker) ─── -->
+<div id="screen-game">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="logo-sm">ChromaBet</span>
+      <span id="g-phase-badge" class="badge badge-waiting">Waiting</span>
+      <span id="g-round-label" style="color:var(--muted);font-size:0.8rem;display:none">Round <strong id="g-round-num">1</strong></span>
+    </div>
+    <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+      <span class="room-chip" onclick="copyRoomLink()" title="Click to copy invite link">Room <span id="g-room-id-display"></span> 📋</span>
+      <div class="balance-chip">₱<span id="g-balance">1,000</span></div>
+      <span style="color:var(--muted);font-size:0.8rem" id="g-player-name-display"></span>
+    </div>
+  </div>
+
+  <div class="game-body">
+    <div class="game-center">
+      <!-- Phase -->
+      <div class="phase-header" id="g-phase-header">
+        <div id="g-phase-waiting">
+          <div class="waiting-spin">🎡</div>
+          <p id="g-waiting-msg" style="color:var(--muted);margin-top:0.5rem">Waiting for the banker to start...</p>
+        </div>
+        <div id="g-phase-betting" style="display:none">
+          <h2 style="color:var(--teal)">Place Your Bet!</h2>
+          <p>Pick a color and wager</p>
+          <div class="countdown-big" id="g-countdown">30</div>
+        </div>
+        <div id="g-phase-closed" style="display:none">
+          <h2 style="color:var(--accent)">Bets Closed</h2>
+          <p>Banker is revealing the winner...</p>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-card" id="g-result-card">
+        <h3 id="g-result-title">—</h3>
+        <div class="result-payout" id="g-result-payout">—</div>
+        <div class="result-detail" id="g-result-detail">—</div>
+      </div>
+
+      <!-- Color grid -->
+      <div class="color-grid" id="g-color-grid"></div>
+
+      <!-- Bet form -->
+      <div class="bet-form" id="g-bet-form">
+        <h3>Place Your Bet</h3>
+        <div id="g-sel-color-info" class="sel-color-info"></div>
+        <div class="quick-bets">
+          <button class="qbet" onclick="setAmt(50)">₱50</button>
+          <button class="qbet" onclick="setAmt(100)">₱100</button>
+          <button class="qbet" onclick="setAmt(200)">₱200</button>
+          <button class="qbet" onclick="setAmt(500)">₱500</button>
+          <button class="qbet" onclick="allIn()">ALL IN</button>
+        </div>
+        <div class="bet-row">
+          <input type="number" id="g-bet-amount" class="inp" placeholder="Amount (min ₱10)" min="10">
+          <button class="btn btn-accent btn-sm" id="g-place-bet-btn" onclick="placeBet()">BET</button>
+        </div>
+        <div class="my-bet-display" id="g-my-bet-display"></div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h4>Players Online</h4>
+        <div id="g-player-list"></div>
+      </div>
+      <div class="sidebar-section" style="flex:1">
+        <h4>History</h4>
+        <div class="history-list" id="g-history-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── BANKER SCREEN ─── -->
+<div id="screen-banker">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="logo-sm" style="color:var(--gold)">ChromaBet</span>
+      <span class="banker-tag">🏦 Banker</span>
+      <span id="b-phase-ind" class="badge badge-waiting">Waiting</span>
+      <span id="b-round-label" style="color:var(--muted);font-size:0.8rem"></span>
+    </div>
+    <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+      <span class="room-chip" onclick="copyRoomLink()" title="Click to copy invite link">Room <span id="b-room-id-display"></span> 📋</span>
+      <span style="font-size:0.78rem;color:var(--muted)"><span class="conn-dot on" id="b-conn-dot"></span><span id="b-conn-lbl">Live</span></span>
+    </div>
+  </div>
+
+  <div class="banker-layout" style="flex:1;display:grid;grid-template-columns:1fr 270px">
+    <div style="padding:1.25rem;overflow-y:auto">
+
+      <div class="card">
+        <h3>Round Overview</h3>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val" id="b-stat-players">0</div><div class="stat-lbl">Players</div></div>
+          <div class="stat-box"><div class="stat-val" id="b-stat-bets">0</div><div class="stat-lbl">Bets</div></div>
+          <div class="stat-box"><div class="stat-val" id="b-stat-pot">₱0</div><div class="stat-lbl">Pot</div></div>
+          <div class="stat-box"><div class="stat-val" id="b-stat-cd" style="color:var(--teal)">—</div><div class="stat-lbl">Countdown</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Game Controls</h3>
+        <div class="controls-row">
+          <select class="timer-select" id="b-timer-select">
+            <option value="20">20 sec</option>
+            <option value="30" selected>30 sec</option>
+            <option value="45">45 sec</option>
+            <option value="60">60 sec</option>
+            <option value="90">90 sec</option>
+          </select>
+          <button class="btn btn-teal btn-sm" id="b-start-btn" onclick="bankerStartBetting()">▶ Start Betting</button>
+          <button class="btn btn-accent btn-sm" id="b-close-btn" onclick="bankerCloseBetting()" disabled>⏹ Close Bets</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Reveal Winning Color</h3>
+        <div class="color-reveal-grid" id="b-reveal-grid"></div>
+        <button class="btn btn-gold" id="b-reveal-btn" onclick="bankerReveal()" disabled>🎲 Reveal Selected Color</button>
+      </div>
+
+      <div class="card">
+        <h3>Bet Distribution</h3>
+        <div id="b-bet-dist"></div>
+      </div>
+
+      <div class="card">
+        <h3>Session Controls</h3>
+        <p style="color:var(--muted);font-size:0.8rem;margin-bottom:0.75rem">Reset players to ₱1,000 or do a full session reset.</p>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-muted btn-sm" onclick="bankerResetPlayers()">↺ Reset Players</button>
+          <button class="btn btn-orange btn-sm" onclick="bankerFullReset()">⚡ Full Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Banker sidebar -->
+    <div class="banker-sidebar sidebar">
+      <div class="sidebar-section">
+        <h4>Banker Balance</h4>
+        <div class="banker-bal-box">
+          <div class="banker-bal-lbl">Your Balance</div>
+          <div class="banker-bal-val" id="b-bal">₱10,000</div>
+          <div class="banker-change" id="b-change-lbl"></div>
+        </div>
+      </div>
+      <div class="sidebar-section" style="flex:1;overflow-y:auto">
+        <h4>Players</h4>
+        <div id="b-player-list"></div>
+      </div>
+      <div class="sidebar-section">
+        <h4>History</h4>
+        <div class="history-list" id="b-history-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── BOT GAME SCREEN ─── -->
+<div id="screen-bot">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="logo-sm">ChromaBet</span>
+      <span class="bot-tag">🤖 Bot Banker</span>
+      <span id="bot-phase-badge" class="badge badge-waiting">Waiting</span>
+      <span id="bot-round-label" style="color:var(--muted);font-size:0.8rem;display:none">Round <strong id="bot-round-num">1</strong></span>
+    </div>
+    <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+      <div class="difficulty-badges">
+        <div id="bot-diff-easy" class="diff-badge easy" onclick="changeBotDifficulty('easy')">Easy</div>
+        <div id="bot-diff-medium" class="diff-badge medium" onclick="changeBotDifficulty('medium')">Medium</div>
+        <div id="bot-diff-hard" class="diff-badge hard" onclick="changeBotDifficulty('hard')">Hard</div>
+      </div>
+      <div class="balance-chip">₱<span id="bot-balance">1,000</span></div>
+    </div>
+  </div>
+  <div class="bot-banner">
+    <div class="bot-pulse"></div>
+    <span id="bot-status-msg">Bot banker is ready. Click "Roll Dice" to start a round!</span>
+  </div>
+
+  <div class="game-body">
+    <div class="game-center">
+      <!-- Phase -->
+      <div class="phase-header" id="bot-phase-header">
+        <div id="bot-phase-waiting">
+          <div class="waiting-spin">🎲</div>
+          <p style="color:var(--muted);margin-top:0.5rem">Bot banker is preparing the round...</p>
+          <button class="btn btn-teal" style="width:auto;padding:0.6rem 2rem;margin-top:1rem;font-size:1.1rem" onclick="botStartRound()" id="bot-start-btn">🎲 Roll Dice</button>
+        </div>
+        <div id="bot-phase-betting" style="display:none">
+          <h2 style="color:var(--teal)">Place Your Bet!</h2>
+          <p>Pick a color — bot rolls when time's up</p>
+          <div class="countdown-big" id="bot-countdown">20</div>
+        </div>
+        <div id="bot-phase-rolling" style="display:none">
+          <h2 style="color:var(--gold)">Rolling...</h2>
+          <div class="dice-container" id="bot-dice-container"></div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-card" id="bot-result-card">
+        <h3 id="bot-result-title">—</h3>
+        <div class="result-payout" id="bot-result-payout">—</div>
+        <div class="result-detail" id="bot-result-detail">—</div>
+      </div>
+
+      <!-- Color grid -->
+      <div class="color-grid" id="bot-color-grid"></div>
+
+      <!-- Bet form -->
+      <div class="bet-form" id="bot-bet-form">
+        <h3>Place Your Bet</h3>
+        <div id="bot-sel-color-info" class="sel-color-info"></div>
+        <div class="quick-bets">
+          <button class="qbet" onclick="botSetAmt(50)">₱50</button>
+          <button class="qbet" onclick="botSetAmt(100)">₱100</button>
+          <button class="qbet" onclick="botSetAmt(200)">₱200</button>
+          <button class="qbet" onclick="botSetAmt(500)">₱500</button>
+          <button class="qbet" onclick="botAllIn()">ALL IN</button>
+        </div>
+        <div class="bet-row">
+          <input type="number" id="bot-bet-amount" class="inp" placeholder="Amount (min ₱10)" min="10">
+          <button class="btn btn-accent btn-sm" id="bot-place-bet-btn" onclick="botPlaceBet()">BET</button>
+        </div>
+        <div class="my-bet-display" id="bot-my-bet-display"></div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h4>📊 Bot Stats</h4>
+        <div style="display:flex;flex-direction:column;gap:0.4rem">
+          <div class="player-item"><span class="pname">Rounds Played</span><span class="pbal" id="bot-stat-rounds">0</span></div>
+          <div class="player-item"><span class="pname">Wins</span><span class="pbal" style="color:var(--teal)" id="bot-stat-wins">0</span></div>
+          <div class="player-item"><span class="pname">Losses</span><span class="pbal" style="color:var(--accent)" id="bot-stat-losses">0</span></div>
+          <div class="player-item"><span class="pname">Biggest Win</span><span class="pbal" id="bot-stat-bigwin">₱0</span></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h4>Bot Banker</h4>
+        <div class="banker-bal-box">
+          <div class="banker-bal-lbl">Bot Balance</div>
+          <div class="banker-bal-val" id="bot-banker-bal">₱10,000</div>
+        </div>
+      </div>
+      <div class="sidebar-section" style="flex:1">
+        <h4>History</h4>
+        <div class="history-list" id="bot-history-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reveal Overlay -->
+<div class="reveal-overlay" id="reveal-overlay">
+  <div class="reveal-box">
+    <div class="reveal-circle" id="reveal-circle"></div>
+    <h2 id="reveal-color-name">—</h2>
+    <div class="reveal-result" id="reveal-result"></div>
+    <p class="reveal-sub" id="reveal-sub"></p>
+    <p class="reveal-hint">Tap anywhere to close</p>
+  </div>
+</div>
+
+<!-- Room modal -->
+<div class="modal-overlay" id="room-modal">
+  <div class="modal-box">
+    <h3>Room Created! 🎉</h3>
+    <p>Share this Room ID with players so they can join your table:</p>
+    <div class="room-id-big" id="modal-room-id">—</div>
+    <p class="room-share-hint" style="margin:0.5rem 0 1rem">Or share the link</p>
+    <button class="btn btn-gold" onclick="copyRoomLink(); closeModal()">📋 Copy Invite Link</button>
+    <button class="btn btn-teal" onclick="closeModal()">Enter Banker Panel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// FIREBASE CONFIG — Using a free public demo project
+// For production: replace with your own Firebase project
+// ─────────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDemo_Replace_With_Your_Key",
+  authDomain: "chromabet-demo.firebaseapp.com",
+  databaseURL: "https://chromabet-demo-default-rtdb.firebaseio.com",
+  projectId: "chromabet-demo",
+  storageBucket: "chromabet-demo.appspot.com",
+};
+
+// ── GAME CONSTANTS ──
+const COLORS = ['Red','Blue','Green','Yellow','Purple','Orange'];
+const COLOR_HEX = {
+  Red:'#ef4444', Blue:'#3b82f6', Green:'#22c55e',
+  Yellow:'#eab308', Purple:'#a855f7', Orange:'#f97316'
+};
+const DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+const PLAYER_START = 1000;
+const BANKER_START = 10000;
+const HOUSE_EDGE = 0.05;
+
+// ── STATE ──
+let db = null;
+let currentScreen = 'landing';
+let myId = localStorage.getItem('chromabet_id') || ('p_' + Math.random().toString(36).slice(2,10));
+localStorage.setItem('chromabet_id', myId);
+let myRole = null;
+let myBalance = PLAYER_START;
+let myName = '';
+let currentRoomId = '';
+let selectedColor = null;
+let myBet = null;
+let countdownTimer = null;
+let gameRef = null;
+let lobbyMode = null;
+
+// Bot mode state
+let botDifficulty = 'easy';
+let botPhase = 'waiting';
+let botMyBalance = PLAYER_START;
+let botBankerBalance = BANKER_START;
+let botSelectedColor = null;
+let botMyBet = null;
+let botCountdownTimer = null;
+let botRound = 0;
+let botHistory = [];
+let botStats = {rounds:0, wins:0, losses:0, bigWin:0};
+let botCountdownVal = 0;
+
+// ── INIT ──
+function initFirebase() {
+  if (db) return;
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.database();
+  } catch(e) {
+    // Already initialized
+    db = firebase.database();
+  }
+}
+
+// ─────────────────────────────────────────────
+// SCREEN MANAGEMENT
+// ─────────────────────────────────────────────
+function showScreen(name) {
+  ['landing','lobby','game','banker','bot'].forEach(s => {
+    const el = document.getElementById('screen-' + s);
+    if (el) el.style.display = 'none';
+  });
+  const target = document.getElementById('screen-' + name);
+  if (target) target.style.display = (name === 'landing' || name === 'lobby') ? 'flex' : 'flex';
+  currentScreen = name;
+}
+
+function goLanding() {
+  cleanup();
+  showScreen('landing');
+}
+
+function showLobby(mode) {
+  lobbyMode = mode;
+  document.getElementById('lobby-player').style.display = 'none';
+  document.getElementById('lobby-banker').style.display = 'none';
+  document.getElementById('lobby-bot').style.display = 'none';
+
+  const titles = { player:'Join a Game', banker:'Create a Room', bot:'Play vs Bot' };
+  const descs = {
+    player:'Enter your name and Room ID to join a banker\'s table.',
+    banker:'Create a room and share the Room ID with players.',
+    bot:'Jump in solo and bet against our bot banker!'
+  };
+  document.getElementById('lobby-title').textContent = titles[mode];
+  document.getElementById('lobby-desc').textContent = descs[mode];
+  document.getElementById('lobby-' + mode).style.display = 'block';
+
+  // Check URL for room ID (player joining via link)
+  if (mode === 'player') {
+    const params = new URLSearchParams(window.location.search);
+    const urlRoom = params.get('room');
+    if (urlRoom) document.getElementById('join-room-id').value = urlRoom.toUpperCase();
+  }
+
+  showScreen('lobby');
+}
+
+// ─────────────────────────────────────────────
+// ROOM GENERATION
+// ─────────────────────────────────────────────
+function genRoomId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = '';
+  for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+
+function copyRoomLink() {
+  const roomId = currentRoomId;
+  if (!roomId) return;
+  const url = `${location.origin}${location.pathname}?room=${roomId}`;
+  navigator.clipboard.writeText(url).then(() => showToast('Invite link copied! 📋', 'success'))
+    .catch(() => showToast('Room ID: ' + roomId, 'info'));
+}
+
+function closeModal() {
+  document.getElementById('room-modal').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────
+// FIREBASE MULTIPLAYER
+// ─────────────────────────────────────────────
+function createRoom() {
+  initFirebase();
+  const bName = document.getElementById('banker-name').value.trim() || 'Banker';
+  myName = bName;
+  myRole = 'banker';
+  currentRoomId = genRoomId();
+
+  const roomData = {
+    phase: 'waiting',
+    round: 0,
+    bankerBalance: BANKER_START,
+    bankerName: bName,
+    bankerId: myId,
+    bets: {},
+    players: {
+      [myId]: { name: bName, role: 'banker', balance: BANKER_START, online: true }
+    },
+    history: [],
+    countdown: 0,
+    createdAt: Date.now()
+  };
+
+  gameRef = db.ref('rooms/' + currentRoomId);
+  gameRef.set(roomData).then(() => {
+    // Show modal with room ID
+    document.getElementById('modal-room-id').textContent = currentRoomId;
+    document.getElementById('b-room-id-display').textContent = currentRoomId;
+    document.getElementById('room-modal').style.display = 'flex';
+
+    // Listen to room state
+    setupBankerListeners();
+    showScreen('banker');
+    buildBankerRevealGrid();
+  }).catch(err => {
+    showToast('Connection failed. Check internet.', 'error');
+  });
+}
+
+function joinAsPlayer() {
+  initFirebase();
+  const name = document.getElementById('player-name').value.trim();
+  const roomId = document.getElementById('join-room-id').value.trim().toUpperCase();
+  if (!name) return showToast('Enter your name!', 'error');
+  if (!roomId || roomId.length < 4) return showToast('Enter a valid Room ID!', 'error');
+
+  myName = name;
+  myRole = 'player';
+  currentRoomId = roomId;
+
+  gameRef = db.ref('rooms/' + roomId);
+  gameRef.once('value').then(snap => {
+    if (!snap.exists()) return showToast('Room not found! Check the Room ID.', 'error');
+    const data = snap.val();
+
+    // Add player to room
+    db.ref(`rooms/${roomId}/players/${myId}`).set({
+      name, role: 'player', balance: PLAYER_START, online: true
+    }).then(() => {
+      myBalance = PLAYER_START;
+      document.getElementById('g-room-id-display').textContent = roomId;
+      document.getElementById('g-player-name-display').textContent = name;
+      updateGBalance(myBalance);
+      buildPlayerColorGrid();
+      setupPlayerListeners();
+      showScreen('game');
+    });
+  }).catch(() => showToast('Could not connect. Try again.', 'error'));
+}
+
+// ─── PLAYER LISTENERS ───
+function setupPlayerListeners() {
+  if (!gameRef) return;
+
+  gameRef.on('value', snap => {
+    if (!snap.exists()) return;
+    const state = snap.val();
+    applyPlayerState(state);
+  });
+
+  // Keep online status
+  db.ref(`rooms/${currentRoomId}/players/${myId}/online`).set(true);
+  db.ref(`rooms/${currentRoomId}/players/${myId}/online`).onDisconnect().set(false);
+}
+
+function applyPlayerState(state) {
+  if (!state) return;
+
+  // Sync my balance from server
+  if (state.players && state.players[myId]) {
+    myBalance = state.players[myId].balance || myBalance;
+    updateGBalance(myBalance);
+  }
+
+  // Round label
+  if (state.round > 0) {
+    document.getElementById('g-round-num').textContent = state.round;
+    document.getElementById('g-round-label').style.display = 'inline';
+  }
+
+  // Update color bet counts
+  const bets = state.bets || {};
+  const betAmounts = {}; const betCounts = {};
+  COLORS.forEach(c => { betAmounts[c] = 0; betCounts[c] = 0; });
+  Object.values(bets).forEach(b => {
+    if (b && b.color) { betAmounts[b.color] += b.amount; betCounts[b.color]++; }
+  });
+  COLORS.forEach(c => {
+    const el = document.getElementById('gcinfo-' + c);
+    if (el) el.textContent = `${betCounts[c]} bet${betCounts[c]!==1?'s':''} · ₱${betAmounts[c].toLocaleString()}`;
+  });
+
+  // Phase
+  updateGPhase(state.phase);
+
+  // Countdown from state
+  if (state.phase === 'betting' && state.countdown > 0) {
+    document.getElementById('g-countdown').textContent = state.countdown;
+    const cd = document.getElementById('g-countdown');
+    cd.className = 'countdown-big' + (state.countdown <= 5 ? ' urgent' : '');
+  }
+
+  // Player list
+  const list = document.getElementById('g-player-list');
+  list.innerHTML = '';
+  Object.entries(state.players || {}).filter(([,p]) => p.role !== 'banker').forEach(([id, p]) => {
+    const isMe = id === myId;
+    const div = document.createElement('div');
+    div.className = 'player-item';
+    const hasBet = !!bets[id];
+    div.innerHTML = `
+      <span class="pname">${isMe?'⭐ ':''}${esc(p.name)}</span>
+      <span class="pbal">₱${(p.balance||0).toLocaleString()}</span>
+      <div class="pbet ${hasBet?'has':''}"></div>
+    `;
+    list.appendChild(div);
+  });
+
+  // History
+  const hist = document.getElementById('g-history-list');
+  hist.innerHTML = '';
+  (state.history || []).slice().reverse().slice(0,12).forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    div.innerHTML = `
+      <div class="hist-dot ${h.winner}"></div>
+      <span>R${h.round}</span>
+      <span style="color:${COLOR_HEX[h.winner]};font-weight:600">${h.winner}</span>
+      <span style="color:var(--muted)">₱${(h.totalPot||0).toLocaleString()}</span>
+    `;
+    hist.appendChild(div);
+  });
+
+  // Handle reveal
+  if (state.revealPending && state.winningColor && !state._revealHandled) {
+    handlePlayerReveal(state);
+  }
+
+  // Reset signal
+  if (state.resetSignal && state.resetSignal !== window._lastResetSignal) {
+    window._lastResetSignal = state.resetSignal;
+    myBet = null; selectedColor = null;
+    document.getElementById('g-result-card').style.display = 'none';
+    document.getElementById('g-my-bet-display').style.display = 'none';
+    resetGColorBtns();
+    showToast('New round! Place your bets.', 'info');
+  }
+}
+
+function handlePlayerReveal(state) {
+  const winner = state.winningColor;
+  const myBetData = (state.bets || {})[myId];
+
+  // Play sound
+  playSound(myBetData && myBetData.color === winner ? 'win' : 'lose');
+
+  // Update color buttons
+  document.querySelectorAll('#g-color-grid .color-btn').forEach(btn => {
+    btn.classList.remove('winner','loser');
+    if (btn.dataset.color === winner) btn.classList.add('winner');
+    else btn.classList.add('loser');
+  });
+
+  // Show overlay
+  showRevealOverlay(winner, myBetData ? myBetData.color === winner : null,
+    myBetData ? state.revealResults?.[myId] : null);
+
+  myBet = null;
+  document.getElementById('g-my-bet-display').style.display = 'none';
+  document.getElementById('g-sel-color-info').style.display = 'none';
+  selectedColor = null;
+
+  // Show result card after overlay
+  setTimeout(() => {
+    const res = state.revealResults?.[myId];
+    showGResultCard(winner, res);
+  }, 5500);
+}
+
+// ─── BANKER LISTENERS ───
+function setupBankerListeners() {
+  if (!gameRef) return;
+  gameRef.on('value', snap => {
+    if (!snap.exists()) return;
+    applyBankerState(snap.val());
+  });
+
+  db.ref(`rooms/${currentRoomId}/players/${myId}/online`).set(true);
+  db.ref(`rooms/${currentRoomId}/players/${myId}/online`).onDisconnect().set(false);
+}
+
+function applyBankerState(state) {
+  if (!state) return;
+
+  const players = Object.entries(state.players || {}).filter(([,p]) => p.role !== 'banker');
+  const bets = state.bets || {};
+  const betsCount = Object.keys(bets).length;
+  const totalPot = Object.values(bets).reduce((s,b) => s + (b?.amount||0), 0);
+
+  document.getElementById('b-stat-players').textContent = players.length;
+  document.getElementById('b-stat-bets').textContent = betsCount;
+  document.getElementById('b-stat-pot').textContent = '₱' + totalPot.toLocaleString();
+
+  const bankerBal = state.bankerBalance || BANKER_START;
+  document.getElementById('b-bal').textContent = '₱' + bankerBal.toLocaleString();
+
+  if (state.round > 0) document.getElementById('b-round-label').textContent = `Round ${state.round}`;
+
+  // Countdown display
+  if (state.phase === 'betting') {
+    document.getElementById('b-stat-cd').textContent = (state.countdown || 0) + 's';
+  } else {
+    document.getElementById('b-stat-cd').textContent = '—';
+  }
+
+  // Bet amounts per color
+  const betAmounts = {}; const betCounts = {};
+  COLORS.forEach(c => { betAmounts[c] = 0; betCounts[c] = 0; });
+  Object.values(bets).forEach(b => {
+    if (b && b.color) { betAmounts[b.color] += b.amount; betCounts[b.color]++; }
+  });
+
+  // Update reveal buttons
+  COLORS.forEach(c => {
+    const el = document.getElementById('brb-' + c);
+    if (el) el.textContent = `${betCounts[c]} bet${betCounts[c]!==1?'s':''} · ₱${betAmounts[c].toLocaleString()}`;
+  });
+
+  // Bet distribution
+  const dist = document.getElementById('b-bet-dist');
+  dist.innerHTML = '';
+  COLORS.forEach(c => {
+    const cnt = betCounts[c]; const amt = betAmounts[c];
+    const pct = totalPot > 0 ? Math.round((amt/totalPot)*100) : 0;
+    const row = document.createElement('div');
+    row.className = 'dist-row';
+    row.innerHTML = `
+      <div class="dist-label">
+        <span style="display:flex;align-items:center;gap:0.4rem">
+          <span style="width:9px;height:9px;border-radius:50%;background:${COLOR_HEX[c]};display:inline-block"></span>${c}
+        </span>
+        <span style="color:var(--muted)">${cnt} bet${cnt!==1?'s':''} · ₱${amt.toLocaleString()} (${pct}%)</span>
+      </div>
+      <div class="dist-bar-bg"><div class="dist-bar-fill" style="width:${pct}%;background:${COLOR_HEX[c]}"></div></div>
+    `;
+    dist.appendChild(row);
+  });
+
+  // Player list
+  const list = document.getElementById('b-player-list');
+  list.innerHTML = '';
+  players.forEach(([id, p]) => {
+    const hasBet = !!bets[id];
+    const div = document.createElement('div');
+    div.className = 'player-row';
+    div.innerHTML = `
+      <span class="pname">${esc(p.name)}</span>
+      <span class="pbal">₱${(p.balance||0).toLocaleString()}</span>
+      <span class="pbet-tag ${hasBet?'vis':''}">${bets[id]?.color||'BET'}</span>
+      <button class="add-bal-btn" onclick="bankerAddBalance('${id}',500)">+₱500</button>
+    `;
+    list.appendChild(div);
+  });
+
+  // History
+  const hist = document.getElementById('b-history-list');
+  hist.innerHTML = '';
+  (state.history || []).slice().reverse().slice(0,12).forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    const ch = h.bankerChange || 0;
+    div.innerHTML = `
+      <div class="hist-dot ${h.winner}"></div>
+      <span>R${h.round}</span>
+      <span style="color:${COLOR_HEX[h.winner]};font-weight:600">${h.winner}</span>
+      <span style="color:var(--muted);margin-left:auto">${ch>=0?'+':''}₱${ch.toLocaleString()}</span>
+    `;
+    hist.appendChild(div);
+  });
+
+  updateBankerPhase(state.phase);
+}
+
+// ─── PLAYER GAME ACTIONS ───
+function buildPlayerColorGrid() {
+  const grid = document.getElementById('g-color-grid');
+  grid.innerHTML = '';
+  COLORS.forEach(color => {
+    const btn = document.createElement('button');
+    btn.className = 'color-btn';
+    btn.dataset.color = color;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="cname">${color}</span><span class="cinfo" id="gcinfo-${color}">0 bets</span>`;
+    btn.onclick = () => gSelectColor(color);
+    grid.appendChild(btn);
+  });
+}
+
+function gSelectColor(color) {
+  if (!gameRef) return;
+  gameRef.once('value').then(snap => {
+    if (!snap.exists()) return;
+    const state = snap.val();
+    if (state.phase !== 'betting' || myBet) return;
+    selectedColor = color;
+    document.querySelectorAll('#g-color-grid .color-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.color === color);
+    });
+    const info = document.getElementById('g-sel-color-info');
+    info.style.display = 'block';
+    info.style.background = COLOR_HEX[color] + '22';
+    info.style.border = '1px solid ' + COLOR_HEX[color] + '55';
+    info.style.color = COLOR_HEX[color];
+    info.textContent = 'Selected: ' + color;
+  });
+}
+
+function placeBet() {
+  if (!selectedColor) return showToast('Pick a color first!', 'error');
+  const amount = parseInt(document.getElementById('g-bet-amount').value);
+  if (!amount || amount < 10) return showToast('Minimum bet is ₱10', 'error');
+  if (amount > myBalance) return showToast('Not enough balance!', 'error');
+
+  gameRef.once('value').then(snap => {
+    if (!snap.exists()) return;
+    const state = snap.val();
+    if (state.phase !== 'betting') return showToast('Betting is closed!', 'error');
+    if (state.bets?.[myId]) return showToast('Already placed a bet!', 'error');
+
+    const newBalance = myBalance - amount;
+    db.ref(`rooms/${currentRoomId}/players/${myId}/balance`).set(newBalance);
+    db.ref(`rooms/${currentRoomId}/bets/${myId}`).set({ color: selectedColor, amount });
+
+    myBalance = newBalance;
+    myBet = { color: selectedColor, amount };
+    updateGBalance(myBalance);
+
+    const display = document.getElementById('g-my-bet-display');
+    display.style.display = 'block';
+    display.innerHTML = `✅ You bet <strong style="color:${COLOR_HEX[selectedColor]}">${selectedColor}</strong> — ₱${amount.toLocaleString()}`;
+
+    document.getElementById('g-place-bet-btn').disabled = true;
+    disableGColorBtns();
+    showToast(`Bet placed: ₱${amount.toLocaleString()} on ${selectedColor}`, 'success');
+    playSound('place');
+  });
+}
+
+function updateGPhase(phase) {
+  const badge = document.getElementById('g-phase-badge');
+  ['g-phase-waiting','g-phase-betting','g-phase-closed'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('g-bet-form').style.display = (phase === 'betting') ? 'block' : 'none';
+
+  if (phase === 'waiting' || phase === 'result') {
+    badge.className = 'badge badge-waiting'; badge.textContent = 'Waiting';
+    document.getElementById('g-phase-waiting').style.display = 'block';
+    document.getElementById('g-waiting-msg').textContent = 'Waiting for the banker to start...';
+    resetGColorBtns();
+  } else if (phase === 'betting') {
+    badge.className = 'badge badge-betting'; badge.textContent = 'Betting Open';
+    document.getElementById('g-phase-betting').style.display = 'block';
+    if (!myBet) enableGColorBtns();
+  } else if (phase === 'closed' || phase === 'reveal') {
+    badge.className = 'badge badge-closed'; badge.textContent = 'Bets Closed';
+    document.getElementById('g-phase-closed').style.display = 'block';
+    disableGColorBtns();
+  }
+}
+
+function enableGColorBtns() {
+  document.querySelectorAll('#g-color-grid .color-btn').forEach(b => {
+    b.disabled = false; b.classList.remove('winner','loser','selected');
+  });
+  document.getElementById('g-place-bet-btn').disabled = false;
+}
+function disableGColorBtns() {
+  document.querySelectorAll('#g-color-grid .color-btn').forEach(b => b.disabled = true);
+  document.getElementById('g-place-bet-btn').disabled = true;
+}
+function resetGColorBtns() {
+  document.querySelectorAll('#g-color-grid .color-btn').forEach(b => {
+    b.disabled = true; b.classList.remove('winner','loser','selected');
+  });
+  selectedColor = null;
+  document.getElementById('g-sel-color-info').style.display = 'none';
+  document.getElementById('g-bet-amount').value = '';
+  document.getElementById('g-place-bet-btn').disabled = false;
+}
+function updateGBalance(bal) { document.getElementById('g-balance').textContent = bal.toLocaleString(); }
+function setAmt(n) { document.getElementById('g-bet-amount').value = n; }
+function allIn() { document.getElementById('g-bet-amount').value = myBalance; }
+
+function showGResultCard(winningColor, myResult) {
+  const card = document.getElementById('g-result-card');
+  card.style.display = 'block';
+  if (!myResult) {
+    card.className = 'result-card nobet';
+    document.getElementById('g-result-title').textContent = 'No Bet';
+    document.getElementById('g-result-payout').textContent = '';
+    document.getElementById('g-result-detail').textContent = `Winning color: ${winningColor}`;
+    return;
+  }
+  if (myResult.won) {
+    card.className = 'result-card win';
+    document.getElementById('g-result-title').textContent = '🎉 You Won!';
+    const pe = document.getElementById('g-result-payout');
+    pe.textContent = `+₱${myResult.profit.toLocaleString()}`;
+    pe.style.color = 'var(--teal)';
+    document.getElementById('g-result-detail').textContent = `Payout ₱${myResult.payout.toLocaleString()} · Winner: ${winningColor}`;
+  } else {
+    card.className = 'result-card lose';
+    document.getElementById('g-result-title').textContent = '😔 You Lost';
+    const pe = document.getElementById('g-result-payout');
+    pe.textContent = `-₱${myResult.stake.toLocaleString()}`;
+    pe.style.color = 'var(--accent)';
+    document.getElementById('g-result-detail').textContent = `Winning color was ${winningColor}. Better luck next round!`;
+  }
+}
+
+// ─── BANKER ACTIONS ───
+function buildBankerRevealGrid() {
+  const grid = document.getElementById('b-reveal-grid');
+  grid.innerHTML = '';
+  COLORS.forEach(color => {
+    const btn = document.createElement('button');
+    btn.className = `crb ${color}`;
+    btn.dataset.color = color;
+    btn.disabled = true;
+    btn.innerHTML = `${color}<span class="crb-info" id="brb-${color}">0 bets</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('.crb').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      window._bankerSelectedReveal = color;
+      document.getElementById('b-reveal-btn').disabled = false;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function updateBankerPhase(phase) {
+  const ind = document.getElementById('b-phase-ind');
+  const startBtn = document.getElementById('b-start-btn');
+  const closeBtn = document.getElementById('b-close-btn');
+  const revealBtn = document.getElementById('b-reveal-btn');
+  document.querySelectorAll('.crb').forEach(b => { b.disabled = true; b.classList.remove('selected'); });
+
+  const labels = {waiting:'Waiting',betting:'Betting Open',closed:'Bets Closed',reveal:'Revealing',result:'Results'};
+  ind.textContent = labels[phase] || phase;
+  ind.className = 'badge badge-' + (phase === 'result' ? 'result' : phase);
+
+  if (phase === 'waiting' || phase === 'result') {
+    startBtn.disabled = false; closeBtn.disabled = true; revealBtn.disabled = true;
+  } else if (phase === 'betting') {
+    startBtn.disabled = true; closeBtn.disabled = false; revealBtn.disabled = true;
+  } else if (phase === 'closed') {
+    startBtn.disabled = true; closeBtn.disabled = true;
+    document.querySelectorAll('.crb').forEach(b => b.disabled = false);
+    revealBtn.disabled = !window._bankerSelectedReveal;
+  } else if (phase === 'reveal') {
+    startBtn.disabled = true; closeBtn.disabled = true; revealBtn.disabled = true;
+  }
+}
+
+function bankerStartBetting() {
+  if (!gameRef) return;
+  const secs = parseInt(document.getElementById('b-timer-select').value);
+  window._bankerSelectedReveal = null;
+  document.getElementById('b-change-lbl').textContent = '';
+
+  gameRef.once('value').then(snap => {
+    const state = snap.val() || {};
+    const newRound = (state.round || 0) + 1;
+    gameRef.update({
+      phase: 'betting',
+      round: newRound,
+      bets: null,
+      winningColor: null,
+      revealPending: false,
+      revealResults: null,
+      countdown: secs,
+      resetSignal: Date.now()
+    });
+    // Start server-side countdown via Firebase
+    bankerRunCountdown(secs, currentRoomId);
+    showToast(`Betting started! ${secs}s timer.`, 'success');
+  });
+}
+
+function bankerRunCountdown(secs, roomId) {
+  clearInterval(countdownTimer);
+  let remaining = secs;
+  countdownTimer = setInterval(() => {
+    remaining--;
+    db.ref(`rooms/${roomId}/countdown`).set(remaining);
+    if (remaining <= 0) {
+      clearInterval(countdownTimer);
+      db.ref(`rooms/${roomId}`).update({ phase: 'closed', countdown: 0 });
+    }
+  }, 1000);
+}
+
+function bankerCloseBetting() {
+  if (!gameRef) return;
+  if (!confirm('Close betting early?')) return;
+  clearInterval(countdownTimer);
+  gameRef.update({ phase: 'closed', countdown: 0 });
+}
+
+function bankerReveal() {
+  const color = window._bankerSelectedReveal;
+  if (!color) return showToast('Select a color to reveal!', 'error');
+  if (!confirm(`Reveal ${color} as the winning color?`)) return;
+
+  gameRef.once('value').then(snap => {
+    if (!snap.exists()) return;
+    const state = snap.val();
+    if (state.phase !== 'closed') return showToast('Close betting first.', 'error');
+
+    const bets = state.bets || {};
+    const players = state.players || {};
+
+    // Calculate payouts
+    const totalPot = Object.values(bets).reduce((s,b) => s + (b?.amount||0), 0);
+    const winningPot = Object.values(bets).filter(b => b?.color === color).reduce((s,b) => s + b.amount, 0);
+    const losingPot = totalPot - winningPot;
+
+    const results = {};
+    const updatedPlayers = { ...players };
+    let bankerChange = 0;
+
+    Object.entries(bets).forEach(([pid, bet]) => {
+      if (!bet || !players[pid]) return;
+      if (bet.color === color) {
+        let profit = 0;
+        if (losingPot > 0 && winningPot > 0) {
+          profit = Math.floor(losingPot * (bet.amount / winningPot) * (1 - HOUSE_EDGE));
+        } else if (losingPot === 0) {
+          profit = Math.floor(bet.amount * (1 - HOUSE_EDGE));
+        }
+        const payout = bet.amount + profit;
+        updatedPlayers[pid] = { ...players[pid], balance: (players[pid].balance || 0) + payout };
+        results[pid] = { won: true, stake: bet.amount, profit, payout };
+        bankerChange -= profit;
+      } else {
+        const collected = Math.floor(bet.amount * (1 - HOUSE_EDGE));
+        results[pid] = { won: false, stake: bet.amount, profit: 0, payout: 0 };
+        bankerChange += collected;
+      }
+    });
+
+    const newBankerBalance = Math.max(0, (state.bankerBalance || BANKER_START) + bankerChange);
+    updatedPlayers[myId] = { ...players[myId], balance: newBankerBalance };
+
+    const histEntry = {
+      round: state.round, winner: color, totalPot, winningPot, losingPot, bankerChange
+    };
+    const history = [...(state.history || []).slice(-19), histEntry];
+
+    gameRef.update({
+      phase: 'result',
+      winningColor: color,
+      revealPending: true,
+      revealResults: results,
+      players: updatedPlayers,
+      bankerBalance: newBankerBalance,
+      history
+    });
+
+    // Update banker balance display
+    const sign = bankerChange >= 0 ? '+' : '';
+    document.getElementById('b-change-lbl').textContent = `${sign}₱${bankerChange.toLocaleString()} this round`;
+    document.getElementById('b-change-lbl').style.color = bankerChange >= 0 ? 'var(--teal)' : 'var(--accent)';
+    showToast(`Revealed: ${color}! Banker ${sign}₱${bankerChange.toLocaleString()}`, bankerChange >= 0 ? 'success' : 'error');
+    playSound('reveal');
+
+    window._bankerSelectedReveal = null;
+    document.querySelectorAll('.crb').forEach(b => b.classList.remove('selected'));
+
+    // Clear reveal after 8s
+    setTimeout(() => {
+      gameRef.update({ revealPending: false });
+    }, 8000);
+  });
+}
+
+function bankerResetPlayers() {
+  if (!confirm('Reset all players to ₱1,000?')) return;
+  clearInterval(countdownTimer);
+  gameRef.once('value').then(snap => {
+    if (!snap.exists()) return;
+    const state = snap.val();
+    const players = { ...state.players };
+    Object.keys(players).forEach(pid => {
+      if (players[pid].role !== 'banker') players[pid].balance = PLAYER_START;
+    });
+    gameRef.update({ players, phase: 'waiting', bets: null, winningColor: null, resetSignal: Date.now() });
+    showToast('Players reset to ₱1,000.', 'info');
+  });
+}
+
+function bankerFullReset() {
+  if (!confirm('Full reset? All balances back to start and history cleared.')) return;
+  clearInterval(countdownTimer);
+  gameRef.once('value').then(snap => {
+    if (!snap.exists()) return;
+    const state = snap.val();
+    const players = { ...state.players };
+    Object.keys(players).forEach(pid => {
+      players[pid].balance = players[pid].role === 'banker' ? BANKER_START : PLAYER_START;
+    });
+    gameRef.update({
+      players, phase: 'waiting', bets: null, winningColor: null,
+      bankerBalance: BANKER_START, round: 0, history: [], countdown: 0, resetSignal: Date.now()
+    });
+    showToast('Full reset complete!', 'info');
+  });
+}
+
+function bankerAddBalance(targetId, amount) {
+  gameRef.once('value').then(snap => {
+    if (!snap.exists()) return;
+    const state = snap.val();
+    const bankerBal = state.bankerBalance || 0;
+    if (bankerBal < amount) return showToast("Not enough banker balance!", 'error');
+    const playerBal = (state.players?.[targetId]?.balance || 0) + amount;
+    db.ref(`rooms/${currentRoomId}/players/${targetId}/balance`).set(playerBal);
+    db.ref(`rooms/${currentRoomId}/bankerBalance`).set(bankerBal - amount);
+    db.ref(`rooms/${currentRoomId}/players/${myId}/balance`).set(bankerBal - amount);
+  });
+}
+
+// ─────────────────────────────────────────────
+// BOT MODE
+// ─────────────────────────────────────────────
+function setDifficulty(d) {
+  botDifficulty = d;
+  document.querySelectorAll('.diff-badge').forEach(b => b.classList.remove('active'));
+  document.querySelector('.diff-badge.' + d).classList.add('active');
+}
+
+function changeBotDifficulty(d) {
+  botDifficulty = d;
+  ['easy','medium','hard'].forEach(dd => {
+    document.getElementById('bot-diff-' + dd).classList.toggle('active', dd === d);
+  });
+  showToast('Difficulty: ' + d.charAt(0).toUpperCase() + d.slice(1), 'info');
+}
+
+function startBotGame() {
+  const name = document.getElementById('bot-player-name').value.trim();
+  if (!name) return showToast('Enter your name!', 'error');
+  myName = name;
+  botMyBalance = PLAYER_START;
+  botBankerBalance = BANKER_START;
+  botRound = 0;
+  botHistory = [];
+  botStats = {rounds:0, wins:0, losses:0, bigWin:0};
+
+  updateBotBalance(botMyBalance);
+  buildBotColorGrid();
+  showScreen('bot');
+  setBotPhase('waiting');
+  updateBotStats();
+}
+
+function buildBotColorGrid() {
+  const grid = document.getElementById('bot-color-grid');
+  grid.innerHTML = '';
+  COLORS.forEach(color => {
+    const btn = document.createElement('button');
+    btn.className = 'color-btn';
+    btn.dataset.color = color;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="cname">${color}</span><span class="cinfo" id="bcinfo-${color}">Pick this!</span>`;
+    btn.onclick = () => botSelectColor(color);
+    grid.appendChild(btn);
+  });
+}
+
+function botSelectColor(color) {
+  if (botPhase !== 'betting' || botMyBet) return;
+  botSelectedColor = color;
+  document.querySelectorAll('#bot-color-grid .color-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.color === color);
+  });
+  const info = document.getElementById('bot-sel-color-info');
+  info.style.display = 'block';
+  info.style.background = COLOR_HEX[color] + '22';
+  info.style.border = '1px solid ' + COLOR_HEX[color] + '55';
+  info.style.color = COLOR_HEX[color];
+  info.textContent = 'Selected: ' + color;
+}
+
+function botPlaceBet() {
+  if (!botSelectedColor) return showToast('Pick a color first!', 'error');
+  const amount = parseInt(document.getElementById('bot-bet-amount').value);
+  if (!amount || amount < 10) return showToast('Minimum bet is ₱10', 'error');
+  if (amount > botMyBalance) return showToast('Not enough balance!', 'error');
+  botMyBalance -= amount;
+  botMyBet = { color: botSelectedColor, amount };
+  updateBotBalance(botMyBalance);
+  document.getElementById('bot-my-bet-display').style.display = 'block';
+  document.getElementById('bot-my-bet-display').innerHTML =
+    `✅ Bet <strong style="color:${COLOR_HEX[botSelectedColor]}">${botSelectedColor}</strong> — ₱${amount.toLocaleString()}`;
+  document.getElementById('bot-place-bet-btn').disabled = true;
+  disableBotColorBtns();
+  playSound('place');
+  showToast(`Bet placed on ${botSelectedColor}!`, 'success');
+}
+
+function botSetAmt(n) { document.getElementById('bot-bet-amount').value = n; }
+function botAllIn() { document.getElementById('bot-bet-amount').value = botMyBalance; }
+
+function botStartRound() {
+  if (botPhase !== 'waiting') return;
+  botRound++;
+  botMyBet = null;
+  botSelectedColor = null;
+  document.getElementById('bot-result-card').style.display = 'none';
+  document.getElementById('bot-my-bet-display').style.display = 'none';
+  document.getElementById('bot-round-num').textContent = botRound;
+  document.getElementById('bot-round-label').style.display = 'inline';
+
+  const timers = { easy: 20, medium: 15, hard: 10 };
+  const timer = timers[botDifficulty];
+  botCountdownVal = timer;
+
+  setBotPhase('betting');
+  enableBotColorBtns();
+  document.getElementById('bot-countdown').textContent = timer;
+  document.getElementById('bot-status-msg').textContent = `🎲 Bot banker started round ${botRound}! You have ${timer}s to bet.`;
+  playSound('start');
+
+  botCountdownTimer = setInterval(() => {
+    botCountdownVal--;
+    const cd = document.getElementById('bot-countdown');
+    cd.textContent = botCountdownVal;
+    cd.className = 'countdown-big' + (botCountdownVal <= 5 ? ' urgent' : '');
+    if (botCountdownVal <= 0) {
+      clearInterval(botCountdownTimer);
+      disableBotColorBtns();
+      botRollDice();
+    }
+  }, 1000);
+}
+
+function botRollDice() {
+  setBotPhase('rolling');
+  document.getElementById('bot-status-msg').textContent = '🎲 Bot is rolling the dice...';
+
+  // Create animated dice
+  const container = document.getElementById('bot-dice-container');
+  container.innerHTML = '';
+
+  // Determine how many dice based on difficulty
+  const numDice = { easy: 1, medium: 2, hard: 3 }[botDifficulty] || 1;
+  const diceEls = [];
+  for (let i = 0; i < numDice; i++) {
+    const die = document.createElement('div');
+    die.className = 'die rolling';
+    die.textContent = DICE_FACES[Math.floor(Math.random() * 6)];
+    die.style.background = `linear-gradient(135deg, ${Object.values(COLOR_HEX)[i * 2 % 6]}, ${Object.values(COLOR_HEX)[(i * 2 + 1) % 6]})`;
+    container.appendChild(die);
+    diceEls.push(die);
+  }
+
+  // Roll animation
+  let rollCount = 0;
+  const rollInterval = setInterval(() => {
+    diceEls.forEach(d => {
+      d.textContent = DICE_FACES[Math.floor(Math.random() * 6)];
+      d.style.background = `linear-gradient(135deg, ${Object.values(COLOR_HEX)[Math.floor(Math.random()*6)]}, ${Object.values(COLOR_HEX)[Math.floor(Math.random()*6)]})`;
+    });
+    rollCount++;
+    if (rollCount >= 14) {
+      clearInterval(rollInterval);
+      // Final determination
+      const winner = botPickWinner();
+      diceEls.forEach(d => {
+        d.classList.remove('rolling');
+        d.classList.add('landed');
+        const face = DICE_FACES[Math.floor(Math.random() * 6)];
+        d.textContent = face;
+        d.style.background = `linear-gradient(135deg, ${COLOR_HEX[winner]}, ${COLOR_HEX[winner]}88)`;
+      });
+      playSound('roll');
+      setTimeout(() => botProcessResult(winner), 800);
+    }
+  }, 100);
+}
+
+function botPickWinner() {
+  // Easy: truly random
+  // Medium: slight bias against player's color
+  // Hard: tries to avoid player's color if possible
+  if (!botMyBet || botDifficulty === 'easy') {
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
+  const playerColor = botMyBet.color;
+  if (botDifficulty === 'medium') {
+    // 35% chance player wins instead of 1/6 = 17%
+    const rand = Math.random();
+    if (rand < 0.35) return playerColor;
+    const others = COLORS.filter(c => c !== playerColor);
+    return others[Math.floor(Math.random() * others.length)];
+  }
+  if (botDifficulty === 'hard') {
+    // 20% chance player wins
+    const rand = Math.random();
+    if (rand < 0.20) return playerColor;
+    const others = COLORS.filter(c => c !== playerColor);
+    return others[Math.floor(Math.random() * others.length)];
+  }
+  return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
+
+function botProcessResult(winner) {
+  const bet = botMyBet;
+  let profit = 0, payout = 0, won = false;
+
+  if (bet) {
+    if (bet.color === winner) {
+      // 1:4 payout for bot mode simplicity
+      profit = Math.floor(bet.amount * 4 * (1 - HOUSE_EDGE));
+      payout = bet.amount + profit;
+      botMyBalance += payout;
+      botBankerBalance -= profit;
+      won = true;
+      botStats.wins++;
+      if (profit > botStats.bigWin) botStats.bigWin = profit;
+      playSound('win');
+    } else {
+      const collected = Math.floor(bet.amount * (1 - HOUSE_EDGE));
+      botBankerBalance += collected;
+      won = false;
+      botStats.losses++;
+      playSound('lose');
+    }
+    botStats.rounds++;
+  }
+
+  // Update color buttons
+  document.querySelectorAll('#bot-color-grid .color-btn').forEach(b => {
+    b.classList.remove('winner','loser','selected');
+    if (b.dataset.color === winner) b.classList.add('winner');
+    else b.classList.add('loser');
+  });
+
+  // Overlay
+  showRevealOverlay(winner, bet ? won : null, bet ? { won, profit, stake: bet.amount, payout } : null);
+
+  botHistory.push({ round: botRound, winner, totalPot: bet?.amount||0 });
+
+  // Sync
+  updateBotBalance(botMyBalance);
+  document.getElementById('bot-banker-bal').textContent = '₱' + botBankerBalance.toLocaleString();
+  document.getElementById('bot-status-msg').textContent = `Round ${botRound} done! Winner: ${winner}. Click Roll Dice for next round.`;
+  updateBotStats();
+  updateBotHistory();
+
+  // Show result card
+  setTimeout(() => {
+    setBotPhase('waiting');
+    if (bet) showBotResultCard(winner, won, profit, bet.amount, payout);
+    botMyBet = null; botSelectedColor = null;
+    document.getElementById('bot-sel-color-info').style.display = 'none';
+    document.getElementById('bot-bet-amount').value = '';
+    document.getElementById('bot-my-bet-display').style.display = 'none';
+    resetBotColorBtns();
+  }, 5500);
+}
+
+function showBotResultCard(winner, won, profit, stake, payout) {
+  const card = document.getElementById('bot-result-card');
+  card.style.display = 'block';
+  if (won) {
+    card.className = 'result-card win';
+    document.getElementById('bot-result-title').textContent = '🎉 You Won!';
+    const pe = document.getElementById('bot-result-payout');
+    pe.textContent = `+₱${profit.toLocaleString()}`;
+    pe.style.color = 'var(--teal)';
+    document.getElementById('bot-result-detail').textContent = `Payout ₱${payout.toLocaleString()} · Winner: ${winner}`;
+  } else {
+    card.className = 'result-card lose';
+    document.getElementById('bot-result-title').textContent = '😔 You Lost';
+    const pe = document.getElementById('bot-result-payout');
+    pe.textContent = `-₱${stake.toLocaleString()}`;
+    pe.style.color = 'var(--accent)';
+    document.getElementById('bot-result-detail').textContent = `Winner was ${winner}. Bet again!`;
+  }
+}
+
+function setBotPhase(phase) {
+  botPhase = phase;
+  const badge = document.getElementById('bot-phase-badge');
+  ['bot-phase-waiting','bot-phase-betting','bot-phase-rolling'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('bot-bet-form').style.display = (phase === 'betting') ? 'block' : 'none';
+
+  if (phase === 'waiting') {
+    badge.className = 'badge badge-waiting'; badge.textContent = 'Waiting';
+    document.getElementById('bot-phase-waiting').style.display = 'block';
+  } else if (phase === 'betting') {
+    badge.className = 'badge badge-betting'; badge.textContent = 'Betting';
+    document.getElementById('bot-phase-betting').style.display = 'block';
+  } else if (phase === 'rolling') {
+    badge.className = 'badge badge-closed'; badge.textContent = 'Rolling!';
+    document.getElementById('bot-phase-rolling').style.display = 'block';
+    document.getElementById('bot-bet-form').style.display = 'none';
+  }
+}
+
+function enableBotColorBtns() {
+  document.querySelectorAll('#bot-color-grid .color-btn').forEach(b => {
+    b.disabled = false; b.classList.remove('winner','loser','selected');
+  });
+  document.getElementById('bot-place-bet-btn').disabled = false;
+}
+function disableBotColorBtns() {
+  document.querySelectorAll('#bot-color-grid .color-btn').forEach(b => b.disabled = true);
+  document.getElementById('bot-place-bet-btn').disabled = true;
+}
+function resetBotColorBtns() {
+  document.querySelectorAll('#bot-color-grid .color-btn').forEach(b => {
+    b.disabled = true; b.classList.remove('winner','loser','selected');
+  });
+  botSelectedColor = null;
+  document.getElementById('bot-sel-color-info').style.display = 'none';
+  document.getElementById('bot-place-bet-btn').disabled = false;
+}
+function updateBotBalance(bal) { document.getElementById('bot-balance').textContent = bal.toLocaleString(); }
+function updateBotStats() {
+  document.getElementById('bot-stat-rounds').textContent = botStats.rounds;
+  document.getElementById('bot-stat-wins').textContent = botStats.wins;
+  document.getElementById('bot-stat-losses').textContent = botStats.losses;
+  document.getElementById('bot-stat-bigwin').textContent = '₱' + botStats.bigWin.toLocaleString();
+}
+function updateBotHistory() {
+  const hist = document.getElementById('bot-history-list');
+  hist.innerHTML = '';
+  botHistory.slice().reverse().slice(0,12).forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    div.innerHTML = `
+      <div class="hist-dot ${h.winner}"></div>
+      <span>R${h.round}</span>
+      <span style="color:${COLOR_HEX[h.winner]};font-weight:600">${h.winner}</span>
+      <span style="color:var(--muted)">₱${(h.totalPot||0).toLocaleString()}</span>
+    `;
+    hist.appendChild(div);
+  });
+}
+
+// ─────────────────────────────────────────────
+// REVEAL OVERLAY
+// ─────────────────────────────────────────────
+function showRevealOverlay(winner, won, myResult) {
+  const overlay = document.getElementById('reveal-overlay');
+  const circle = document.getElementById('reveal-circle');
+  const colorName = document.getElementById('reveal-color-name');
+  const resultEl = document.getElementById('reveal-result');
+  const subEl = document.getElementById('reveal-sub');
+
+  circle.style.background = `radial-gradient(circle, ${COLOR_HEX[winner]}, ${COLOR_HEX[winner]}88)`;
+  colorName.textContent = winner;
+  colorName.style.color = COLOR_HEX[winner];
+
+  if (myResult && myResult.won) {
+    resultEl.textContent = `🎉 YOU WIN +₱${myResult.profit.toLocaleString()}`;
+    resultEl.className = 'reveal-result win';
+    subEl.textContent = `Payout: ₱${myResult.payout.toLocaleString()}`;
+  } else if (myResult && !myResult.won) {
+    resultEl.textContent = `😔 Lost ₱${myResult.stake.toLocaleString()}`;
+    resultEl.className = 'reveal-result lose';
+    subEl.textContent = 'Better luck next round!';
+  } else {
+    resultEl.textContent = 'No bet this round';
+    resultEl.className = 'reveal-result';
+    resultEl.style.color = 'var(--muted)';
+    subEl.textContent = '';
+  }
+
+  overlay.style.display = 'flex';
+  overlay.onclick = () => { overlay.style.display = 'none'; };
+  setTimeout(() => { overlay.style.display = 'none'; }, 5000);
+}
+
+// ─────────────────────────────────────────────
+// SOUND (Web Audio API)
+// ─────────────────────────────────────────────
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, type, duration, gain=0.3) {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gainNode.gain.setValueAtTime(gain, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+function playSound(type) {
+  try {
+    switch(type) {
+      case 'place': playTone(523, 'sine', 0.15); break;
+      case 'win':
+        playTone(523, 'sine', 0.15);
+        setTimeout(() => playTone(659, 'sine', 0.15), 150);
+        setTimeout(() => playTone(784, 'sine', 0.3), 300);
+        break;
+      case 'lose':
+        playTone(300, 'sawtooth', 0.1);
+        setTimeout(() => playTone(250, 'sawtooth', 0.2), 120);
+        break;
+      case 'reveal':
+        playTone(440, 'triangle', 0.1);
+        setTimeout(() => playTone(550, 'triangle', 0.1), 100);
+        setTimeout(() => playTone(660, 'triangle', 0.15), 200);
+        break;
+      case 'roll':
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => playTone(200 + Math.random()*300, 'square', 0.05, 0.15), i*60);
+        }
+        break;
+      case 'start':
+        playTone(440, 'sine', 0.1);
+        setTimeout(() => playTone(550, 'sine', 0.12), 120);
+        break;
+    }
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => t.classList.remove('show'), 4000);
+}
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function cleanup() {
+  clearInterval(countdownTimer);
+  clearInterval(botCountdownTimer);
+  if (gameRef) { gameRef.off(); gameRef = null; }
+  myBet = null; selectedColor = null; myRole = null; currentRoomId = '';
+  botPhase = 'waiting'; botMyBet = null; botSelectedColor = null;
+}
+
+// ─────────────────────────────────────────────
+// INIT — Check URL params on load
+// ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  showScreen('landing');
+
+  // Auto-open join lobby if room param in URL
+  const params = new URLSearchParams(window.location.search);
+  const urlRoom = params.get('room');
+  if (urlRoom) {
+    showLobby('player');
+    document.getElementById('join-room-id').value = urlRoom.toUpperCase();
+  }
+
+  // Enter key support
+  document.getElementById('player-name').addEventListener('keydown', e => { if(e.key==='Enter') joinAsPlayer(); });
+  document.getElementById('join-room-id').addEventListener('keydown', e => { if(e.key==='Enter') joinAsPlayer(); });
+  document.getElementById('join-room-id').addEventListener('input', e => {
+    e.target.value = e.target.value.toUpperCase();
+  });
+  document.getElementById('bot-player-name').addEventListener('keydown', e => { if(e.key==='Enter') startBotGame(); });
+});
+</script>
+
+<!-- ─── FIREBASE SETUP INSTRUCTIONS (shown only if Firebase not configured) ─── -->
+<script>
+// ── FIREBASE SETUP ──
+// This game needs Firebase Realtime Database for multiplayer.
+// 
+// QUICK SETUP (free, 5 minutes):
+// 1. Go to https://console.firebase.google.com
+// 2. Create a new project (any name)
+// 3. Add a Web App, copy the config
+// 4. Enable Realtime Database (test mode for now)
+// 5. Replace FIREBASE_CONFIG at the top of this file
+//
+// Until then, Bot Mode works perfectly without Firebase!
+//
+// For Hostinger deployment:
+// - Upload ONLY this index.html file
+// - No server needed — Firebase handles everything!
+
+// ── DEMO MODE: If Firebase fails, disable multiplayer gracefully ──
+window.addEventListener('error', function(e) {
+  if (e.message && e.message.includes('firebase')) {
+    // Firebase not configured — only bot mode works
+    const cards = document.querySelectorAll('.card-player, .card-banker');
+    cards.forEach(c => {
+      c.style.opacity = '0.6';
+      const desc = c.querySelector('.card-desc');
+      if (desc) desc.textContent = 'Requires Firebase setup — see index.html comments.';
+    });
+  }
+});
+
+// Override multiplayer functions if Firebase not configured
+const _origCreate = window.createRoom;
+window.createRoom = function() {
+  if (typeof firebase === 'undefined' || FIREBASE_CONFIG.apiKey === 'AIzaSyDemo_Replace_With_Your_Key') {
+    showToast('⚠️ Firebase not configured! See index.html comments. Bot mode works now!', 'error');
+    return;
+  }
+  _origCreate();
+};
+const _origJoin = window.joinAsPlayer;
+window.joinAsPlayer = function() {
+  if (typeof firebase === 'undefined' || FIREBASE_CONFIG.apiKey === 'AIzaSyDemo_Replace_With_Your_Key') {
+    showToast('⚠️ Firebase not configured! Try Bot Mode instead.', 'error');
+    return;
+  }
+  _origJoin();
+};
+</script>
 
 </body>
 </html>
