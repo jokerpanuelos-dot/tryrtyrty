@@ -8,433 +8,139 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #17171f;
-    --border: rgba(255,255,255,0.07);
-    --text: #f0f0f8;
-    --muted: #6b6b80;
-    --accent: #ff3c5f;
-    --gold: #ffd166;
-    --teal: #06d6a0;
-    --c-red: #ef4444;
-    --c-blue: #3b82f6;
-    --c-green: #22c55e;
-    --c-yellow: #eab308;
-    --c-purple: #a855f7;
-    --c-orange: #f97316;
+    --bg:#0a0a0f; --surface:#111118; --surface2:#17171f;
+    --border:rgba(255,255,255,0.07); --text:#f0f0f8; --muted:#6b6b80;
+    --accent:#ff3c5f; --gold:#ffd166; --teal:#06d6a0;
   }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
   /* JOIN SCREEN */
-  #joinScreen {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-  }
-  .join-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 2.5rem 2rem;
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-  }
-  .join-box h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.5rem;
-    color: var(--teal);
-    margin-bottom: 0.3rem;
-  }
-  .join-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
-  .inp {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.85rem 1rem;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .inp:focus { border-color: var(--teal); }
-  .btn {
-    width: 100%;
-    padding: 0.9rem;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: transform 0.15s, opacity 0.15s;
-  }
-  .btn:hover { transform: translateY(-2px); }
-  .btn:active { transform: scale(0.97); }
-  .btn-teal { background: var(--teal); color: #0a0a0f; }
-  .btn-accent { background: var(--accent); color: #fff; }
-  .btn-gold { background: var(--gold); color: #0a0a0f; }
-  .btn-muted { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  #joinScreen { flex:1; display:flex; align-items:center; justify-content:center; padding:2rem; }
+  .join-box { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2.5rem 2rem; width:100%; max-width:400px; text-align:center; }
+  .join-box h2 { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; color:var(--teal); margin-bottom:0.3rem; }
+  .join-box p { color:var(--muted); font-size:0.9rem; margin-bottom:2rem; }
+  .inp { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:0.85rem 1rem; color:var(--text); font-family:'DM Sans',sans-serif; font-size:1rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; }
+  .inp:focus { border-color:var(--teal); }
+
+  .btn { width:100%; padding:0.9rem; border:none; border-radius:10px; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:0.05em; cursor:pointer; transition:transform 0.15s,opacity 0.15s; }
+  .btn:hover { transform:translateY(-2px); }
+  .btn:active { transform:scale(0.97); }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-teal { background:var(--teal); color:#0a0a0f; }
+  .btn-accent { background:var(--accent); color:#fff; }
+  .btn-gold { background:var(--gold); color:#0a0a0f; }
+  .btn-muted { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
 
   /* GAME SCREEN */
-  #gameScreen { display: none; flex: 1; flex-direction: column; }
+  #gameScreen { display:none; flex:1; flex-direction:column; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); background:var(--surface); flex-wrap:wrap; gap:0.5rem; }
+  .topbar-left { display:flex; align-items:center; gap:1rem; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--teal); }
+  .badge { padding:0.25rem 0.75rem; border-radius:20px; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; }
+  .badge-waiting { background:rgba(107,107,128,0.2); color:var(--muted); }
+  .badge-betting { background:rgba(6,214,160,0.2); color:var(--teal); }
+  .badge-closed  { background:rgba(255,60,95,0.2); color:var(--accent); }
+  .badge-result  { background:rgba(255,209,102,0.2); color:var(--gold); }
+  .balance-chip { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:0.3rem 1rem; font-size:0.9rem; font-weight:600; }
+  .balance-chip span { color:var(--gold); }
+  .main-area { flex:1; display:grid; grid-template-columns:1fr 300px; }
 
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .topbar-left { display: flex; align-items: center; gap: 1rem; }
-  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--teal); }
-  .badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .badge-waiting { background: rgba(107,107,128,0.2); color: var(--muted); }
-  .badge-betting { background: rgba(6,214,160,0.2); color: var(--teal); }
-  .badge-closed { background: rgba(255,60,95,0.2); color: var(--accent); }
-  .badge-result { background: rgba(255,209,102,0.2); color: var(--gold); }
+  .game-center { padding:1.5rem; display:flex; flex-direction:column; gap:1.5rem; }
 
-  .balance-chip {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 0.3rem 1rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-  .balance-chip span { color: var(--gold); }
-
-  .main-area {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 0;
-  }
-
-  .game-center {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .phase-header {
-    text-align: center;
-    padding: 1.5rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-  }
-  .phase-header h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.5rem;
-    margin-bottom: 0.3rem;
-  }
-  .phase-header p { color: var(--muted); font-size: 0.9rem; }
-  .countdown-big {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 4rem;
-    line-height: 1;
-    color: var(--gold);
-  }
-  .countdown-big.urgent { color: var(--accent); animation: blink 0.5s step-end infinite; }
-  @keyframes blink { 50% { opacity: 0.4; } }
+  /* PHASE HEADER */
+  .phase-header { text-align:center; padding:1.5rem; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  .phase-header h2 { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; margin-bottom:0.3rem; }
+  .phase-header p { color:var(--muted); font-size:0.9rem; }
+  .countdown-big { font-family:'Bebas Neue',sans-serif; font-size:4rem; line-height:1; color:var(--gold); }
+  .countdown-big.urgent { color:var(--accent); animation:blink 0.5s step-end infinite; }
+  @keyframes blink { 50% { opacity:0.4; } }
+  .waiting-banner { background:rgba(107,107,128,0.1); border:1px solid var(--border); border-radius:12px; padding:2rem; text-align:center; }
+  .waiting-banner .spin { font-size:2rem; display:inline-block; animation:spin 2s linear infinite; margin-bottom:0.5rem; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .waiting-banner p { color:var(--muted); font-size:0.9rem; }
 
   /* COLOR GRID */
-  .color-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-  }
-
-  .color-btn {
-    aspect-ratio: 1;
-    border-radius: 16px;
-    border: 3px solid transparent;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
-  }
-  .color-btn:hover:not(:disabled) { transform: scale(1.05); }
-  .color-btn:disabled { cursor: not-allowed; opacity: 0.6; }
-  .color-btn.selected {
-    border-color: white;
-    box-shadow: 0 0 30px rgba(255,255,255,0.3);
-    transform: scale(1.07);
-  }
-  .color-btn.winner {
-    border-color: var(--gold) !important;
-    box-shadow: 0 0 40px rgba(255,209,102,0.5) !important;
-    animation: winnerPulse 0.5s ease 3;
-  }
-  .color-btn.loser { opacity: 0.3; filter: grayscale(0.5); }
-
-  @keyframes winnerPulse {
-    0%, 100% { transform: scale(1.07); }
-    50% { transform: scale(1.15); }
-  }
-
-  .color-btn[data-color="Red"]    { background: linear-gradient(135deg, #ef4444, #dc2626); }
-  .color-btn[data-color="Blue"]   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-  .color-btn[data-color="Green"]  { background: linear-gradient(135deg, #22c55e, #16a34a); }
-  .color-btn[data-color="Yellow"] { background: linear-gradient(135deg, #eab308, #ca8a04); }
-  .color-btn[data-color="Purple"] { background: linear-gradient(135deg, #a855f7, #9333ea); }
-  .color-btn[data-color="Orange"] { background: linear-gradient(135deg, #f97316, #ea580c); }
-
-  .color-btn .cname {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    color: white;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
-    letter-spacing: 0.05em;
-  }
-  .color-btn .ccount {
-    font-size: 0.7rem;
-    background: rgba(0,0,0,0.3);
-    border-radius: 10px;
-    padding: 0.1rem 0.5rem;
-    color: rgba(255,255,255,0.9);
-  }
+  .color-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; }
+  .color-btn { aspect-ratio:1; border-radius:16px; border:3px solid transparent; cursor:pointer; position:relative; overflow:hidden; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.3rem; }
+  .color-btn:hover:not(:disabled) { transform:scale(1.05); }
+  .color-btn:disabled { cursor:not-allowed; opacity:0.6; }
+  .color-btn.selected { border-color:white; box-shadow:0 0 30px rgba(255,255,255,0.3); transform:scale(1.07); }
+  .color-btn.winner { border-color:var(--gold)!important; box-shadow:0 0 40px rgba(255,209,102,0.5)!important; animation:winnerPulse 0.5s ease 3; }
+  .color-btn.loser { opacity:0.3; filter:grayscale(0.5); }
+  @keyframes winnerPulse { 0%,100%{transform:scale(1.07);} 50%{transform:scale(1.15);} }
+  .color-btn[data-color="Red"]    { background:linear-gradient(135deg,#ef4444,#dc2626); }
+  .color-btn[data-color="Blue"]   { background:linear-gradient(135deg,#3b82f6,#2563eb); }
+  .color-btn[data-color="Green"]  { background:linear-gradient(135deg,#22c55e,#16a34a); }
+  .color-btn[data-color="Yellow"] { background:linear-gradient(135deg,#eab308,#ca8a04); }
+  .color-btn[data-color="Purple"] { background:linear-gradient(135deg,#a855f7,#9333ea); }
+  .color-btn[data-color="Orange"] { background:linear-gradient(135deg,#f97316,#ea580c); }
+  .color-btn .cname { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; color:white; text-shadow:0 1px 4px rgba(0,0,0,0.4); letter-spacing:0.05em; }
+  .color-btn .cinfo { font-size:0.68rem; background:rgba(0,0,0,0.3); border-radius:10px; padding:0.1rem 0.5rem; color:rgba(255,255,255,0.9); line-height:1.4; text-align:center; }
 
   /* BET FORM */
-  .bet-form {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.25rem;
-  }
-  .bet-form h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem;
-    color: var(--muted);
-    margin-bottom: 1rem;
-  }
-  .bet-row { display: flex; gap: 0.5rem; }
-  .bet-row .inp { margin-bottom: 0; flex: 1; }
-  .quick-bets { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
-  .qbet {
-    padding: 0.3rem 0.7rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .qbet:hover { background: var(--border); }
-  .selected-color-info {
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    display: none;
-  }
-  .my-bet-display {
-    margin-top: 0.75rem;
-    padding: 0.75rem;
-    background: rgba(6,214,160,0.1);
-    border: 1px solid rgba(6,214,160,0.3);
-    border-radius: 10px;
-    font-size: 0.9rem;
-    color: var(--teal);
-    display: none;
-    text-align: center;
-  }
+  .bet-form { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.25rem; }
+  .bet-form h3 { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--muted); margin-bottom:1rem; }
+  .bet-row { display:flex; gap:0.5rem; }
+  .bet-row .inp { margin-bottom:0; flex:1; }
+  .quick-bets { display:flex; gap:0.5rem; margin-bottom:0.75rem; flex-wrap:wrap; }
+  .qbet { padding:0.3rem 0.7rem; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.82rem; cursor:pointer; transition:background 0.15s; }
+  .qbet:hover { background:var(--border); }
+  .selected-color-info { padding:0.5rem 0.75rem; border-radius:8px; font-size:0.85rem; font-weight:600; margin-bottom:0.75rem; display:none; }
+  .my-bet-display { margin-top:0.75rem; padding:0.75rem; background:rgba(6,214,160,0.1); border:1px solid rgba(6,214,160,0.3); border-radius:10px; font-size:0.9rem; color:var(--teal); display:none; text-align:center; }
 
   /* RESULT CARD */
-  .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    text-align: center;
-    display: none;
-  }
-  .result-card.win { border-color: var(--teal); background: rgba(6,214,160,0.07); }
-  .result-card.lose { border-color: var(--accent); background: rgba(255,60,95,0.07); }
-  .result-card h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.5rem;
-    margin-bottom: 0.3rem;
-  }
-  .result-card.win h3 { color: var(--teal); }
-  .result-card.lose h3 { color: var(--accent); }
-  .result-card p { color: var(--muted); font-size: 0.9rem; }
-  .payout-amount { font-size: 2rem; font-family: 'Bebas Neue', sans-serif; color: var(--gold); }
+  .result-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; text-align:center; display:none; }
+  .result-card.win  { border-color:var(--teal); background:rgba(6,214,160,0.07); }
+  .result-card.lose { border-color:var(--accent); background:rgba(255,60,95,0.07); }
+  .result-card.nobet{ border-color:var(--muted); }
+  .result-card h3 { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; margin-bottom:0.3rem; }
+  .result-card.win  h3 { color:var(--teal); }
+  .result-card.lose h3 { color:var(--accent); }
+  .result-card.nobet h3 { color:var(--muted); }
+  .payout-amount { font-size:2rem; font-family:'Bebas Neue',sans-serif; }
+  .result-detail { font-size:0.82rem; color:var(--muted); margin-top:0.5rem; }
 
   /* SIDEBAR */
-  .sidebar {
-    border-left: 1px solid var(--border);
-    background: var(--surface);
-    display: flex;
-    flex-direction: column;
-  }
-  .sidebar-section {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .sidebar-section h4 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    margin-bottom: 0.75rem;
-  }
-  .player-list { display: flex; flex-direction: column; gap: 0.4rem; }
-  .player-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.4rem 0.6rem;
-    background: var(--surface2);
-    border-radius: 8px;
-    font-size: 0.82rem;
-  }
-  .player-item .pname { font-weight: 500; }
-  .player-item .pbal { color: var(--gold); font-size: 0.78rem; }
-  .player-item .pbet {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--muted);
-  }
-  .player-item .pbet.has-bet { background: var(--teal); }
-
-  .history-list { display: flex; flex-direction: column; gap: 0.4rem; max-height: 200px; overflow-y: auto; }
-  .history-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.78rem;
-    padding: 0.3rem 0.5rem;
-    background: var(--surface2);
-    border-radius: 6px;
-  }
-  .history-dot {
-    width: 12px; height: 12px; border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .history-dot.Red    { background: #ef4444; }
-  .history-dot.Blue   { background: #3b82f6; }
-  .history-dot.Green  { background: #22c55e; }
-  .history-dot.Yellow { background: #eab308; }
-  .history-dot.Purple { background: #a855f7; }
-  .history-dot.Orange { background: #f97316; }
+  .sidebar { border-left:1px solid var(--border); background:var(--surface); display:flex; flex-direction:column; }
+  .sidebar-section { padding:1rem; border-bottom:1px solid var(--border); }
+  .sidebar-section h4 { font-family:'Bebas Neue',sans-serif; font-size:1rem; color:var(--muted); letter-spacing:0.1em; margin-bottom:0.75rem; }
+  .player-list { display:flex; flex-direction:column; gap:0.4rem; }
+  .player-item { display:flex; align-items:center; justify-content:space-between; padding:0.4rem 0.6rem; background:var(--surface2); border-radius:8px; font-size:0.82rem; gap:0.3rem; }
+  .player-item .pname { font-weight:500; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .player-item .pbal { color:var(--gold); font-size:0.78rem; white-space:nowrap; }
+  .player-item .pbet { width:8px; height:8px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+  .player-item .pbet.has-bet { background:var(--teal); }
+  .history-list { display:flex; flex-direction:column; gap:0.4rem; max-height:200px; overflow-y:auto; }
+  .history-item { display:flex; align-items:center; justify-content:space-between; font-size:0.78rem; padding:0.3rem 0.5rem; background:var(--surface2); border-radius:6px; gap:0.3rem; }
+  .history-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .history-dot.Red{background:#ef4444} .history-dot.Blue{background:#3b82f6} .history-dot.Green{background:#22c55e}
+  .history-dot.Yellow{background:#eab308} .history-dot.Purple{background:#a855f7} .history-dot.Orange{background:#f97316}
 
   /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
-    z-index: 1000;
-    transition: transform 0.3s;
-    white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: var(--teal); color: var(--teal); }
-  .toast.error { border-color: var(--accent); color: var(--accent); }
-  .toast.info { border-color: var(--gold); color: var(--gold); }
-
-  /* WAITING OVERLAY */
-  .waiting-banner {
-    background: rgba(107,107,128,0.1);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-  }
-  .waiting-banner .spin {
-    font-size: 2rem;
-    display: inline-block;
-    animation: spin 2s linear infinite;
-    margin-bottom: 0.5rem;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .waiting-banner p { color: var(--muted); font-size: 0.9rem; }
+  .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:0.75rem 1.5rem; font-size:0.9rem; z-index:1000; transition:transform 0.3s; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast.success { border-color:var(--teal); color:var(--teal); }
+  .toast.error { border-color:var(--accent); color:var(--accent); }
+  .toast.info { border-color:var(--gold); color:var(--gold); }
 
   /* REVEAL OVERLAY */
-  .reveal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    display: none;
-  }
-  .reveal-box {
-    text-align: center;
-    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(0.5); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  .reveal-color-circle {
-    width: 200px; height: 200px;
-    border-radius: 50%;
-    margin: 0 auto 1.5rem;
-    box-shadow: 0 0 80px rgba(255,255,255,0.3);
-    animation: revealSpin 0.8s ease both;
-  }
-  @keyframes revealSpin {
-    from { transform: scale(0) rotate(180deg); opacity: 0; }
-    to { transform: scale(1) rotate(0deg); opacity: 1; }
-  }
-  .reveal-box h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 4rem;
-    color: white;
-    margin-bottom: 0.5rem;
-  }
-  .reveal-box p { color: var(--muted); font-size: 1rem; }
-  .reveal-close-hint { margin-top: 1.5rem; color: var(--muted); font-size: 0.8rem; }
+  .reveal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.88); display:none; align-items:center; justify-content:center; z-index:999; }
+  .reveal-box { text-align:center; animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both; padding:2rem; }
+  @keyframes popIn { from{opacity:0;transform:scale(0.5);} to{opacity:1;transform:scale(1);} }
+  .reveal-color-circle { width:180px; height:180px; border-radius:50%; margin:0 auto 1.5rem; box-shadow:0 0 80px rgba(255,255,255,0.3); animation:revealSpin 0.8s ease both; }
+  @keyframes revealSpin { from{transform:scale(0) rotate(180deg);opacity:0;} to{transform:scale(1) rotate(0deg);opacity:1;} }
+  .reveal-box h2 { font-family:'Bebas Neue',sans-serif; font-size:4rem; color:white; margin-bottom:0.5rem; }
+  .reveal-result-big { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; margin-bottom:0.3rem; }
+  .reveal-result-big.win  { color:var(--teal); }
+  .reveal-result-big.lose { color:var(--accent); }
+  .reveal-box p { color:var(--muted); font-size:1rem; }
+  .reveal-close-hint { margin-top:1.5rem; color:var(--muted); font-size:0.8rem; }
 
-  @media (max-width: 700px) {
-    .main-area { grid-template-columns: 1fr; }
-    .sidebar { border-left: none; border-top: 1px solid var(--border); }
-    .color-grid { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width:700px) {
+    .main-area { grid-template-columns:1fr; }
+    .sidebar { border-left:none; border-top:1px solid var(--border); }
+    .color-grid { grid-template-columns:repeat(3,1fr); }
   }
 </style>
 </head>
@@ -444,9 +150,9 @@
 <div id="joinScreen">
   <div class="join-box">
     <h2>Join Game</h2>
-    <p>Enter your name to join the color betting table</p>
+    <p>Enter your name to join the banker's color game table</p>
     <input type="text" id="nameInput" class="inp" placeholder="Your name..." maxlength="20" autocomplete="off">
-    <button class="btn btn-teal" onclick="joinGame()">Join Now →</button>
+    <button class="btn btn-teal" onclick="joinGame()">Join Table →</button>
     <div style="margin-top:1rem">
       <a href="index.html" style="color:var(--muted);font-size:0.8rem;text-decoration:none">← Back to lobby</a>
     </div>
@@ -475,12 +181,12 @@
         <div id="phaseWaiting">
           <div class="waiting-banner">
             <div class="spin">🎡</div>
-            <p id="waitingMsg">Waiting for the banker to start the game...</p>
+            <p id="waitingMsg">Waiting for the banker to start the round...</p>
           </div>
         </div>
         <div id="phaseBetting" style="display:none">
           <h2 style="color:var(--teal)">Place Your Bet!</h2>
-          <p>Choose a color and enter your amount</p>
+          <p>Pick a color and enter your amount</p>
           <div class="countdown-big" id="countdownDisplay">30</div>
         </div>
         <div id="phaseClosed" style="display:none">
@@ -493,15 +199,15 @@
       <div class="result-card" id="resultCard">
         <h3 id="resultTitle">—</h3>
         <div class="payout-amount" id="resultPayout">—</div>
-        <p id="resultDesc">—</p>
+        <div class="result-detail" id="resultDetail">—</div>
       </div>
 
       <!-- Color Grid -->
       <div class="color-grid" id="colorGrid"></div>
 
       <!-- Bet Form -->
-      <div class="bet-form" id="betForm">
-        <h3>Your Bet</h3>
+      <div class="bet-form" id="betForm" style="display:none">
+        <h3>Place Your Bet</h3>
         <div id="selectedColorInfo" class="selected-color-info"></div>
         <div class="quick-bets">
           <button class="qbet" onclick="setAmount(50)">₱50</button>
@@ -538,7 +244,8 @@
   <div class="reveal-box">
     <div class="reveal-color-circle" id="revealCircle"></div>
     <h2 id="revealColorName">—</h2>
-    <p id="revealSubtext">—</p>
+    <div class="reveal-result-big" id="revealResultBig"></div>
+    <p id="revealSubtext"></p>
     <p class="reveal-close-hint">Tap anywhere to close</p>
   </div>
 </div>
@@ -552,21 +259,22 @@
   let currentPhase = 'waiting';
   let selectedColor = null;
   let myBet = null;
-  let betCounts = {};
+  let connected = false;
 
-  const COLOR_STYLES = {
-    Red: '#ef4444', Blue: '#3b82f6', Green: '#22c55e',
-    Yellow: '#eab308', Purple: '#a855f7', Orange: '#f97316'
+  const COLOR_HEX = {
+    Red:'#ef4444', Blue:'#3b82f6', Green:'#22c55e',
+    Yellow:'#eab308', Purple:'#a855f7', Orange:'#f97316'
   };
+  const COLORS = ['Red','Blue','Green','Yellow','Purple','Orange'];
 
   // Build color grid
-  const COLORS = ['Red','Blue','Green','Yellow','Purple','Orange'];
   const grid = document.getElementById('colorGrid');
   COLORS.forEach(color => {
     const btn = document.createElement('button');
     btn.className = 'color-btn';
     btn.dataset.color = color;
-    btn.innerHTML = `<span class="cname">${color}</span><span class="ccount" id="count-${color}">0 bets</span>`;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="cname">${color}</span><span class="cinfo" id="cinfo-${color}">0 bets</span>`;
     btn.onclick = () => selectColor(color);
     grid.appendChild(btn);
   });
@@ -575,11 +283,8 @@
     const name = document.getElementById('nameInput').value.trim();
     if (!name) return showToast('Enter your name!', 'error');
     myName = name;
-
-    // Get or create persistent ID
     myId = localStorage.getItem('chromabet_id') || ('p_' + Math.random().toString(36).slice(2,8));
     localStorage.setItem('chromabet_id', myId);
-
     connectWS(name);
   }
 
@@ -591,10 +296,14 @@
     ws = new WebSocket(WS_URL);
     ws.onopen = () => {
       ws.send(JSON.stringify({ type: 'join', name, id: myId, role: 'player' }));
+      connected = true;
     };
     ws.onmessage = e => handleMsg(JSON.parse(e.data));
     ws.onclose = () => {
-      showToast('Disconnected. Reconnecting...', 'error');
+      connected = false;
+      if (document.getElementById('gameScreen').style.display !== 'none') {
+        showToast('Reconnecting...', 'error');
+      }
       setTimeout(() => connectWS(myName), 2000);
     };
     ws.onerror = () => ws.close();
@@ -631,23 +340,33 @@
         myBalance = msg.balance;
         updateBalance(myBalance);
         showMyBet();
-        showToast(`Bet placed: ₱${msg.amount} on ${msg.color}`, 'success');
+        showToast(`Bet placed: ₱${msg.amount.toLocaleString()} on ${msg.color}`, 'success');
         disableColorBtns();
+        document.getElementById('placeBetBtn').disabled = true;
         break;
 
       case 'reveal':
-        showReveal(msg);
+        handleReveal(msg);
         break;
 
       case 'reset':
-        myBet = null;
-        selectedColor = null;
-        currentPhase = 'waiting';
+        myBet = null; selectedColor = null; currentPhase = 'waiting';
         document.getElementById('resultCard').style.display = 'none';
         document.getElementById('myBetDisplay').style.display = 'none';
         resetColorBtns();
         updatePhaseUI('waiting');
-        showToast('Game reset! New game starting soon.', 'info');
+        showToast('Players reset to ₱1,000. New game starting soon.', 'info');
+        break;
+
+      case 'fullReset':
+        myBet = null; selectedColor = null; currentPhase = 'waiting';
+        myBalance = msg.playerStart || 1000;
+        updateBalance(myBalance);
+        document.getElementById('resultCard').style.display = 'none';
+        document.getElementById('myBetDisplay').style.display = 'none';
+        resetColorBtns();
+        updatePhaseUI('waiting');
+        showToast('New session started! Everyone reset.', 'info');
         break;
 
       case 'error':
@@ -658,49 +377,56 @@
 
   function applyState(state) {
     currentPhase = state.phase;
-    betCounts = state.betCounts || {};
 
-    // Update phase UI
-    if (state.round) document.getElementById('roundNum').textContent = state.round;
-    document.getElementById('roundLabel').style.display = state.round > 0 ? 'inline' : 'none';
+    if (state.round) {
+      document.getElementById('roundNum').textContent = state.round;
+      document.getElementById('roundLabel').style.display = 'inline';
+    }
+
     updatePhaseUI(state.phase);
-    if (state.countdown > 0) {
+
+    if (state.countdown > 0 && state.phase === 'betting') {
       document.getElementById('countdownDisplay').textContent = state.countdown;
     }
 
-    // Update bet counts
+    // Update color info
     COLORS.forEach(c => {
-      const el = document.getElementById('count-' + c);
-      if (el) el.textContent = (betCounts[c] || 0) + ' bet' + (betCounts[c] !== 1 ? 's' : '');
+      const cnt = (state.betCounts || {})[c] || 0;
+      const amt = (state.betAmounts || {})[c] || 0;
+      const el = document.getElementById('cinfo-' + c);
+      if (el) el.textContent = `${cnt} bet${cnt!==1?'s':''} · ₱${amt.toLocaleString()}`;
     });
 
-    // Update player list
+    // Sync my balance from state (handles rejoin)
+    const me = (state.players || []).find(p => p.id === myId);
+    if (me) { myBalance = me.balance; updateBalance(myBalance); }
+
+    // Player list
     const list = document.getElementById('playerList');
     list.innerHTML = '';
-    (state.players || []).filter(p => p.id !== 'banker').forEach(p => {
+    (state.players || []).filter(p => p.role !== 'banker').forEach(p => {
+      const isMe = p.id === myId;
       const div = document.createElement('div');
       div.className = 'player-item';
-      const isMe = p.id === myId;
       div.innerHTML = `
         <span class="pname">${isMe ? '⭐ ' : ''}${escHtml(p.name)}</span>
         <span class="pbal">₱${p.balance.toLocaleString()}</span>
         <div class="pbet ${p.hasBet ? 'has-bet' : ''}"></div>
       `;
       list.appendChild(div);
-      if (isMe) myBalance = p.balance;
     });
-    updateBalance(myBalance);
 
     // History
     const hist = document.getElementById('historyList');
     hist.innerHTML = '';
-    (state.history || []).reverse().forEach(h => {
+    (state.history || []).slice().reverse().forEach(h => {
       const div = document.createElement('div');
       div.className = 'history-item';
       div.innerHTML = `
         <div class="history-dot ${h.winner}"></div>
-        <span>Round ${h.round}</span>
-        <span style="color:var(--muted)">Pot: ₱${h.totalPot}</span>
+        <span>R${h.round}</span>
+        <span style="color:${COLOR_HEX[h.winner]};font-weight:600">${h.winner}</span>
+        <span style="color:var(--muted)">₱${(h.totalPot||0).toLocaleString()}</span>
       `;
       hist.appendChild(div);
     });
@@ -712,30 +438,27 @@
     document.getElementById('phaseBetting').style.display = 'none';
     document.getElementById('phaseClosed').style.display = 'none';
 
-    const betForm = document.getElementById('betForm');
-    betForm.style.display = phase === 'betting' ? 'block' : 'none';
+    document.getElementById('betForm').style.display = (phase === 'betting') ? 'block' : 'none';
 
     if (phase === 'waiting') {
-      badge.className = 'badge badge-waiting';
-      badge.textContent = 'Waiting';
+      badge.className = 'badge badge-waiting'; badge.textContent = 'Waiting';
       document.getElementById('phaseWaiting').style.display = 'block';
-      document.getElementById('waitingMsg').textContent = 'Waiting for the banker to start the game...';
+      document.getElementById('waitingMsg').textContent = 'Waiting for the banker to start the round...';
       resetColorBtns();
+      document.getElementById('resultCard').style.display = 'none';
     } else if (phase === 'betting') {
-      badge.className = 'badge badge-betting';
-      badge.textContent = 'Betting Open';
+      badge.className = 'badge badge-betting'; badge.textContent = 'Betting Open';
       document.getElementById('phaseBetting').style.display = 'block';
       document.getElementById('resultCard').style.display = 'none';
       if (!myBet) enableColorBtns();
-    } else if (phase === 'closed') {
-      badge.className = 'badge badge-closed';
-      badge.textContent = 'Bets Closed';
+    } else if (phase === 'closed' || phase === 'reveal') {
+      badge.className = 'badge badge-closed'; badge.textContent = 'Bets Closed';
       document.getElementById('phaseClosed').style.display = 'block';
       disableColorBtns();
     } else if (phase === 'result') {
-      badge.className = 'badge badge-result';
-      badge.textContent = 'Results';
+      badge.className = 'badge badge-result'; badge.textContent = 'Results';
       document.getElementById('phaseClosed').style.display = 'block';
+      disableColorBtns();
     }
   }
 
@@ -747,9 +470,9 @@
     });
     const info = document.getElementById('selectedColorInfo');
     info.style.display = 'block';
-    info.style.background = COLOR_STYLES[color] + '22';
-    info.style.border = '1px solid ' + COLOR_STYLES[color] + '55';
-    info.style.color = COLOR_STYLES[color];
+    info.style.background = COLOR_HEX[color] + '22';
+    info.style.border = '1px solid ' + COLOR_HEX[color] + '55';
+    info.style.color = COLOR_HEX[color];
     info.textContent = `Selected: ${color}`;
   }
 
@@ -764,61 +487,57 @@
   function showMyBet() {
     const el = document.getElementById('myBetDisplay');
     el.style.display = 'block';
-    el.innerHTML = `✅ Bet placed: <strong style="color:${COLOR_STYLES[myBet.color]}">${myBet.color}</strong> — ₱${myBet.amount}`;
+    el.innerHTML = `✅ You bet <strong style="color:${COLOR_HEX[myBet.color]}">${myBet.color}</strong> — ₱${myBet.amount.toLocaleString()}`;
   }
 
-  function showReveal(msg) {
+  function handleReveal(msg) {
     const { winningColor, results } = msg;
     const myResult = results[myId];
 
-    // Show overlay
+    // Update color buttons
+    document.querySelectorAll('.color-btn').forEach(btn => {
+      btn.classList.remove('winner','loser');
+      if (btn.dataset.color === winningColor) btn.classList.add('winner');
+      else btn.classList.add('loser');
+    });
+
+    // Overlay
     const overlay = document.getElementById('revealOverlay');
-    const circle = document.getElementById('revealCircle');
+    const circle  = document.getElementById('revealCircle');
     const colorName = document.getElementById('revealColorName');
-    const subtext = document.getElementById('revealSubtext');
+    const resultBig = document.getElementById('revealResultBig');
+    const subtext   = document.getElementById('revealSubtext');
 
-    circle.style.background = `radial-gradient(circle, ${COLOR_STYLES[winningColor]}, ${COLOR_STYLES[winningColor]}88)`;
+    circle.style.background = `radial-gradient(circle, ${COLOR_HEX[winningColor]}, ${COLOR_HEX[winningColor]}88)`;
     colorName.textContent = winningColor;
-    colorName.style.color = COLOR_STYLES[winningColor];
+    colorName.style.color = COLOR_HEX[winningColor];
 
-    if (myResult) {
-      if (myResult.won) {
-        subtext.textContent = `🎉 YOU WIN! +₱${myResult.payout}`;
-        subtext.style.color = '#06d6a0';
-      } else {
-        subtext.textContent = myBet ? `😔 You lost ₱${myBet.amount}` : 'You didn\'t bet this round.';
-        subtext.style.color = '#ff3c5f';
-      }
+    if (myResult && myResult.won) {
+      resultBig.textContent = `🎉 YOU WIN +₱${myResult.profit.toLocaleString()}`;
+      resultBig.className = 'reveal-result-big win';
+      subtext.textContent = `Payout: ₱${myResult.payout.toLocaleString()} (stake ₱${myResult.stake.toLocaleString()} + profit ₱${myResult.profit.toLocaleString()})`;
+    } else if (myResult && !myResult.won) {
+      resultBig.textContent = `😔 You Lost ₱${myResult.stake.toLocaleString()}`;
+      resultBig.className = 'reveal-result-big lose';
+      subtext.textContent = `Your color didn't win this round.`;
     } else {
-      subtext.textContent = 'You didn\'t bet this round.';
+      resultBig.textContent = 'You didn\'t bet this round';
+      resultBig.className = 'reveal-result-big';
+      resultBig.style.color = 'var(--muted)';
+      subtext.textContent = '';
     }
 
     overlay.style.display = 'flex';
-    overlay.onclick = () => {
-      overlay.style.display = 'none';
-      // Show result card
-      showResultCard(winningColor, myResult);
-    };
-
-    // Auto-close after 4 seconds
+    overlay.onclick = () => { overlay.style.display = 'none'; showResultCard(winningColor, myResult); };
     setTimeout(() => {
       if (overlay.style.display !== 'none') {
         overlay.style.display = 'none';
         showResultCard(winningColor, myResult);
       }
-    }, 4000);
+    }, 5000);
 
-    // Update color buttons
-    document.querySelectorAll('.color-btn').forEach(btn => {
-      if (btn.dataset.color === winningColor) {
-        btn.classList.add('winner');
-      } else {
-        btn.classList.add('loser');
-      }
-    });
-
-    // Update balance from results
-    if (myResult && msg.players) {
+    // Sync balance
+    if (msg.players) {
       const me = msg.players.find(p => p.id === myId);
       if (me) { myBalance = me.balance; updateBalance(myBalance); }
     }
@@ -834,23 +553,26 @@
     card.style.display = 'block';
 
     if (!myResult) {
-      card.className = 'result-card';
+      card.className = 'result-card nobet';
       document.getElementById('resultTitle').textContent = 'No Bet';
-      document.getElementById('resultPayout').textContent = '—';
-      document.getElementById('resultDesc').textContent = `Winning color was ${winningColor}`;
+      document.getElementById('resultPayout').textContent = '';
+      document.getElementById('resultDetail').textContent = `Winning color: ${winningColor}`;
       return;
     }
-
     if (myResult.won) {
       card.className = 'result-card win';
       document.getElementById('resultTitle').textContent = '🎉 You Won!';
-      document.getElementById('resultPayout').textContent = `+₱${myResult.payout}`;
-      document.getElementById('resultDesc').textContent = `Winning color: ${winningColor}`;
+      const payEl = document.getElementById('resultPayout');
+      payEl.textContent = `+₱${myResult.profit.toLocaleString()}`;
+      payEl.style.color = 'var(--teal)';
+      document.getElementById('resultDetail').textContent = `Total payout ₱${myResult.payout.toLocaleString()} · Winning color: ${winningColor}`;
     } else {
       card.className = 'result-card lose';
       document.getElementById('resultTitle').textContent = '😔 You Lost';
-      document.getElementById('resultPayout').textContent = `Winning color: ${winningColor}`;
-      document.getElementById('resultDesc').textContent = `Better luck next round!`;
+      const payEl = document.getElementById('resultPayout');
+      payEl.textContent = `-₱${myResult.stake.toLocaleString()}`;
+      payEl.style.color = 'var(--accent)';
+      document.getElementById('resultDetail').textContent = `Winning color: ${winningColor} · Better luck next round!`;
     }
   }
 
@@ -859,9 +581,11 @@
       btn.disabled = false;
       btn.classList.remove('winner','loser','selected');
     });
+    document.getElementById('placeBetBtn').disabled = false;
   }
   function disableColorBtns() {
     document.querySelectorAll('.color-btn').forEach(btn => btn.disabled = true);
+    document.getElementById('placeBetBtn').disabled = true;
   }
   function resetColorBtns() {
     document.querySelectorAll('.color-btn').forEach(btn => {
@@ -871,24 +595,22 @@
     selectedColor = null;
     document.getElementById('selectedColorInfo').style.display = 'none';
     document.getElementById('betAmount').value = '';
+    document.getElementById('placeBetBtn').disabled = false;
   }
 
   function setAmount(n) { document.getElementById('betAmount').value = n; }
   function allIn() { document.getElementById('betAmount').value = myBalance; }
-  function updateBalance(bal) {
-    document.getElementById('balanceDisplay').textContent = '₱' + bal.toLocaleString();
-  }
+  function updateBalance(bal) { document.getElementById('balanceDisplay').textContent = '₱' + bal.toLocaleString(); }
 
   function showToast(msg, type='info') {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast ' + type + ' show';
     clearTimeout(t._timeout);
-    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 4000);
   }
-
   function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
 </body>

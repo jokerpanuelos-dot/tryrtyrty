@@ -9,201 +9,119 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #08080c;
-    --surface: #101015;
-    --surface2: #18181f;
-    --border: rgba(255,255,255,0.08);
-    --text: #f0f0f8;
-    --muted: #6b6b80;
-    --gold: #ffd166;
-    --accent: #ff3c5f;
-    --teal: #06d6a0;
-    --c-red: #ef4444; --c-blue: #3b82f6; --c-green: #22c55e;
-    --c-yellow: #eab308; --c-purple: #a855f7; --c-orange: #f97316;
+    --bg: #08080c; --surface: #101015; --surface2: #18181f;
+    --border: rgba(255,255,255,0.08); --text: #f0f0f8; --muted: #6b6b80;
+    --gold: #ffd166; --accent: #ff3c5f; --teal: #06d6a0;
+    --c-red:#ef4444; --c-blue:#3b82f6; --c-green:#22c55e;
+    --c-yellow:#eab308; --c-purple:#a855f7; --c-orange:#f97316;
   }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--gold); }
-  .banker-badge {
-    background: rgba(255,209,102,0.15); color: var(--gold);
-    border: 1px solid rgba(255,209,102,0.3);
-    border-radius: 20px; padding: 0.25rem 0.85rem;
-    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-  }
-  .phase-indicator {
-    padding: 0.3rem 1rem; border-radius: 20px;
-    font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  .pi-waiting { background: rgba(107,107,128,0.2); color: var(--muted); }
-  .pi-betting { background: rgba(6,214,160,0.2); color: var(--teal); }
-  .pi-closed  { background: rgba(255,60,95,0.2); color: var(--accent); }
-  .pi-result  { background: rgba(255,209,102,0.2); color: var(--gold); }
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); background:var(--surface); }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--gold); }
+  .banker-badge { background:rgba(255,209,102,0.15); color:var(--gold); border:1px solid rgba(255,209,102,0.3); border-radius:20px; padding:0.25rem 0.85rem; font-size:0.75rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; }
+  .phase-indicator { padding:0.3rem 1rem; border-radius:20px; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+  .pi-waiting { background:rgba(107,107,128,0.2); color:var(--muted); }
+  .pi-betting { background:rgba(6,214,160,0.2); color:var(--teal); }
+  .pi-closed  { background:rgba(255,60,95,0.2); color:var(--accent); }
+  .pi-reveal  { background:rgba(255,209,102,0.2); color:var(--gold); }
+  .pi-result  { background:rgba(255,209,102,0.2); color:var(--gold); }
 
-  .layout {
-    flex: 1; display: grid;
-    grid-template-columns: 1fr 320px;
-  }
+  .layout { flex:1; display:grid; grid-template-columns:1fr 320px; }
+  .main { padding:1.5rem; display:flex; flex-direction:column; gap:1.25rem; }
 
-  .main { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-  }
-  .card h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem; letter-spacing: 0.08em;
-    color: var(--muted); margin-bottom: 1rem;
-  }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; }
+  .card h3 { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:0.08em; color:var(--muted); margin-bottom:1rem; }
 
   /* STATS */
-  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.75rem; }
-  .stat-box {
-    background: var(--surface2); border-radius: 12px;
-    padding: 1rem; text-align: center;
-  }
-  .stat-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem; color: var(--gold); line-height: 1;
-  }
-  .stat-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:0.75rem; }
+  .stat-box { background:var(--surface2); border-radius:12px; padding:1rem; text-align:center; }
+  .stat-val { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:var(--gold); line-height:1; }
+  .stat-val.banker-val { color:var(--teal); font-size:1.4rem; }
+  .stat-val.positive { color:var(--teal); }
+  .stat-val.negative { color:var(--accent); }
+  .stat-lbl { font-size:0.7rem; color:var(--muted); margin-top:0.2rem; text-transform:uppercase; letter-spacing:0.05em; }
 
-  /* CONTROLS */
-  .btn {
-    padding: 0.8rem 1.5rem;
-    border: none; border-radius: 10px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem; letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: transform 0.15s, opacity 0.15s, box-shadow 0.2s;
-  }
-  .btn:hover:not(:disabled) { transform: translateY(-2px); }
-  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-  .btn-gold { background: var(--gold); color: #08080c; }
-  .btn-teal { background: var(--teal); color: #08080c; }
-  .btn-accent { background: var(--accent); color: white; }
-  .btn-muted { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  /* BUTTONS */
+  .btn { padding:0.8rem 1.5rem; border:none; border-radius:10px; font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:0.05em; cursor:pointer; transition:transform 0.15s, opacity 0.15s, box-shadow 0.2s; }
+  .btn:hover:not(:disabled) { transform:translateY(-2px); }
+  .btn:disabled { opacity:0.3; cursor:not-allowed; transform:none; }
+  .btn-gold   { background:var(--gold); color:#08080c; }
+  .btn-teal   { background:var(--teal); color:#08080c; }
+  .btn-accent { background:var(--accent); color:white; }
+  .btn-muted  { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+  .btn-orange { background:#f97316; color:white; }
 
-  .controls-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  .controls-row { display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; }
+  .timer-select { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:0.8rem 1rem; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.9rem; outline:none; }
 
-  .timer-select {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 0.8rem 1rem;
-    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
-    outline: none;
-  }
+  .countdown-big { font-family:'Bebas Neue',sans-serif; font-size:3.5rem; color:var(--gold); line-height:1; text-align:center; }
+  .countdown-big.urgent { color:var(--accent); animation:blink 0.5s step-end infinite; }
+  @keyframes blink { 50% { opacity:0.4; } }
 
-  .countdown-big {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3.5rem; color: var(--gold); line-height: 1;
-    text-align: center;
-  }
-  .countdown-big.urgent { color: var(--accent); animation: blink 0.5s step-end infinite; }
-  @keyframes blink { 50% { opacity: 0.4; } }
+  /* COLOR REVEAL GRID */
+  .color-reveal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; margin-bottom:1rem; }
+  .color-reveal-btn { padding:1rem; border:3px solid transparent; border-radius:12px; cursor:pointer; font-family:'Bebas Neue',sans-serif; font-size:1.2rem; color:white; text-shadow:0 1px 4px rgba(0,0,0,0.4); transition:transform 0.15s, border-color 0.2s, box-shadow 0.2s; display:flex; flex-direction:column; align-items:center; gap:0.3rem; }
+  .color-reveal-btn:hover:not(:disabled) { transform:scale(1.05); }
+  .color-reveal-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .color-reveal-btn.selected { border-color:white; box-shadow:0 0 20px rgba(255,255,255,0.3); transform:scale(1.07); }
+  .crb-Red    { background:linear-gradient(135deg,#ef4444,#dc2626); }
+  .crb-Blue   { background:linear-gradient(135deg,#3b82f6,#2563eb); }
+  .crb-Green  { background:linear-gradient(135deg,#22c55e,#16a34a); }
+  .crb-Yellow { background:linear-gradient(135deg,#eab308,#ca8a04); }
+  .crb-Purple { background:linear-gradient(135deg,#a855f7,#9333ea); }
+  .crb-Orange { background:linear-gradient(135deg,#f97316,#ea580c); }
+  .crb-info { font-size:0.68rem; background:rgba(0,0,0,0.3); border-radius:8px; padding:0.1rem 0.5rem; line-height:1.4; text-align:center; }
 
-  /* COLOR PICKER FOR REVEAL */
-  .color-reveal-grid {
-    display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-  .color-reveal-btn {
-    padding: 1rem; border: 3px solid transparent;
-    border-radius: 12px; cursor: pointer;
-    font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem;
-    color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.4);
-    transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
-    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-  }
-  .color-reveal-btn:hover:not(:disabled) { transform: scale(1.05); }
-  .color-reveal-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .color-reveal-btn.selected { border-color: white; box-shadow: 0 0 20px rgba(255,255,255,0.3); transform: scale(1.07); }
-  .crb-Red    { background: linear-gradient(135deg,#ef4444,#dc2626); }
-  .crb-Blue   { background: linear-gradient(135deg,#3b82f6,#2563eb); }
-  .crb-Green  { background: linear-gradient(135deg,#22c55e,#16a34a); }
-  .crb-Yellow { background: linear-gradient(135deg,#eab308,#ca8a04); }
-  .crb-Purple { background: linear-gradient(135deg,#a855f7,#9333ea); }
-  .crb-Orange { background: linear-gradient(135deg,#f97316,#ea580c); }
-  .crb-bets { font-size: 0.7rem; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.1rem 0.4rem; }
+  /* BET DISTRIBUTION */
+  .dist-row { margin-bottom:0.5rem; }
+  .dist-label { display:flex; justify-content:space-between; margin-bottom:0.25rem; font-size:0.8rem; align-items:center; }
+  .dist-bar-bg { height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+  .dist-bar-fill { height:100%; border-radius:4px; transition:width 0.4s; }
 
   /* SIDEBAR */
-  .sidebar {
-    border-left: 1px solid var(--border);
-    background: var(--surface);
-    display: flex; flex-direction: column;
-  }
-  .sidebar-section { padding: 1rem; border-bottom: 1px solid var(--border); }
-  .sidebar-section h4 {
-    font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
-    color: var(--muted); letter-spacing: 0.1em; margin-bottom: 0.75rem;
-  }
-  .player-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.5rem 0.6rem; background: var(--surface2);
-    border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.82rem;
-  }
-  .player-row .pname { font-weight: 500; flex: 1; }
-  .player-row .pbal { color: var(--gold); margin: 0 0.5rem; }
-  .player-row .pbet-tag {
-    font-size: 0.68rem; padding: 0.1rem 0.5rem;
-    border-radius: 6px; background: rgba(6,214,160,0.15); color: var(--teal);
-    display: none;
-  }
-  .player-row .pbet-tag.visible { display: inline; }
-  .add-bal-btn {
-    background: none; border: 1px solid var(--border); border-radius: 6px;
-    color: var(--muted); font-size: 0.7rem; padding: 0.1rem 0.4rem;
-    cursor: pointer; transition: color 0.15s, border-color 0.15s;
-  }
-  .add-bal-btn:hover { color: var(--gold); border-color: var(--gold); }
+  .sidebar { border-left:1px solid var(--border); background:var(--surface); display:flex; flex-direction:column; }
+  .sidebar-section { padding:1rem; border-bottom:1px solid var(--border); }
+  .sidebar-section h4 { font-family:'Bebas Neue',sans-serif; font-size:1rem; color:var(--muted); letter-spacing:0.1em; margin-bottom:0.75rem; }
 
-  .history-list { max-height: 220px; overflow-y: auto; }
-  .hist-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.35rem 0.5rem; font-size: 0.78rem;
-    background: var(--surface2); border-radius: 6px; margin-bottom: 0.3rem;
-  }
-  .hist-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .player-row { display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.6rem; background:var(--surface2); border-radius:8px; margin-bottom:0.4rem; font-size:0.82rem; gap:0.3rem; }
+  .player-row .pname { font-weight:500; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .player-row .pbal { color:var(--gold); white-space:nowrap; }
+  .player-row .pbet-tag { font-size:0.65rem; padding:0.1rem 0.4rem; border-radius:6px; background:rgba(6,214,160,0.15); color:var(--teal); white-space:nowrap; display:none; }
+  .player-row .pbet-tag.visible { display:inline; }
+  .add-bal-btn { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-size:0.7rem; padding:0.15rem 0.5rem; cursor:pointer; transition:color 0.15s, border-color 0.15s; white-space:nowrap; }
+  .add-bal-btn:hover { color:var(--gold); border-color:var(--gold); }
+
+  .banker-balance-box { background:rgba(6,214,160,0.08); border:1px solid rgba(6,214,160,0.25); border-radius:12px; padding:0.75rem 1rem; margin-bottom:0.75rem; }
+  .banker-bal-label { font-size:0.7rem; color:var(--teal); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.2rem; }
+  .banker-bal-val { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--teal); line-height:1; }
+  .banker-change { font-size:0.78rem; margin-top:0.15rem; }
+
+  .history-list { max-height:220px; overflow-y:auto; }
+  .hist-item { display:flex; align-items:center; gap:0.4rem; padding:0.4rem 0.5rem; font-size:0.75rem; background:var(--surface2); border-radius:6px; margin-bottom:0.3rem; }
+  .hist-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
   .hist-dot.Red{background:#ef4444} .hist-dot.Blue{background:#3b82f6} .hist-dot.Green{background:#22c55e}
   .hist-dot.Yellow{background:#eab308} .hist-dot.Purple{background:#a855f7} .hist-dot.Orange{background:#f97316}
+  .hist-change { margin-left:auto; font-size:0.72rem; font-weight:600; }
+  .hist-change.pos { color:var(--teal); } .hist-change.neg { color:var(--accent); }
 
   /* TOAST */
-  .toast {
-    position: fixed; bottom: 2rem; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 0.75rem 1.5rem;
-    font-size: 0.9rem; z-index: 1000;
-    transition: transform 0.3s; white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: var(--teal); color: var(--teal); }
-  .toast.error { border-color: var(--accent); color: var(--accent); }
-  .toast.info { border-color: var(--gold); color: var(--gold); }
+  .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:0.75rem 1.5rem; font-size:0.9rem; z-index:1000; transition:transform 0.3s; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast.success { border-color:var(--teal); color:var(--teal); }
+  .toast.error { border-color:var(--accent); color:var(--accent); }
+  .toast.info { border-color:var(--gold); color:var(--gold); }
 
-  /* CONNECTION */
   .conn-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:0.4rem; }
-  .conn-dot.on { background:var(--teal); box-shadow: 0 0 6px var(--teal); }
+  .conn-dot.on { background:var(--teal); box-shadow:0 0 6px var(--teal); }
   .conn-dot.off { background:var(--accent); }
 
-  @media (max-width:700px) {
+  .danger-zone { display:flex; gap:0.5rem; flex-wrap:wrap; }
+
+  @media (max-width:900px) {
     .layout { grid-template-columns:1fr; }
     .sidebar { border-left:none; border-top:1px solid var(--border); }
-    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .stats-row { grid-template-columns:repeat(3,1fr); }
   }
 </style>
 </head>
@@ -242,6 +160,10 @@
           <div class="stat-lbl">Total Pot</div>
         </div>
         <div class="stat-box">
+          <div class="stat-val banker-val" id="statBankerBal">₱10,000</div>
+          <div class="stat-lbl">Banker Balance</div>
+        </div>
+        <div class="stat-box">
           <div class="stat-val" id="statCountdown">—</div>
           <div class="stat-lbl">Time Left</div>
         </div>
@@ -259,8 +181,8 @@
           <option value="60">60 seconds</option>
           <option value="90">90 seconds</option>
         </select>
-        <button class="btn btn-teal" id="startBettingBtn" onclick="startBetting()">▶ Start Betting</button>
-        <button class="btn btn-muted" id="resetBtn" onclick="resetGame()">↺ Reset Game</button>
+        <button class="btn btn-teal"   id="startBettingBtn" onclick="startBetting()">▶ Start Betting</button>
+        <button class="btn btn-accent" id="closeBettingBtn" onclick="closeBetting()" disabled>⏹ Close Bets</button>
       </div>
     </div>
 
@@ -268,7 +190,7 @@
     <div class="card">
       <h3>Reveal Winning Color</h3>
       <div class="color-reveal-grid" id="revealGrid"></div>
-      <button class="btn btn-accent" id="revealBtn" onclick="revealColor()" disabled style="width:100%">
+      <button class="btn btn-gold" id="revealBtn" onclick="revealColor()" disabled style="width:100%;font-size:1.3rem">
         🎲 Reveal Selected Color
       </button>
     </div>
@@ -276,16 +198,36 @@
     <!-- Bet Distribution -->
     <div class="card">
       <h3>Bet Distribution</h3>
-      <div id="betDistribution" style="display:flex;flex-direction:column;gap:0.5rem"></div>
+      <div id="betDistribution"></div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card">
+      <h3>Session Controls</h3>
+      <p style="color:var(--muted);font-size:0.82rem;margin-bottom:1rem">Reset player balances back to ₱1,000. Banker keeps their current balance. Or do a full reset to start a brand-new session.</p>
+      <div class="danger-zone">
+        <button class="btn btn-muted"   onclick="resetGame()">↺ Reset Players (₱1,000)</button>
+        <button class="btn btn-orange"  onclick="fullReset()">⚡ Full Reset (New Session)</button>
+      </div>
     </div>
 
   </div>
 
   <div class="sidebar">
+    <div class="sidebar-section">
+      <h4>Banker</h4>
+      <div class="banker-balance-box">
+        <div class="banker-bal-label">Your Balance</div>
+        <div class="banker-bal-val" id="sidebarBankerBal">₱10,000</div>
+        <div class="banker-change" id="bankerChangeLabel"></div>
+      </div>
+    </div>
+
     <div class="sidebar-section" style="flex:1;overflow-y:auto">
       <h4>Players</h4>
       <div id="playerList"></div>
     </div>
+
     <div class="sidebar-section">
       <h4>History</h4>
       <div class="history-list" id="historyList"></div>
@@ -300,7 +242,7 @@
   let ws;
   let selectedRevealColor = null;
   let gameState = {};
-  let betCounts = {};
+  let lastBankerBalance = 10000;
 
   const COLORS = ['Red','Blue','Green','Yellow','Purple','Orange'];
   const COLOR_HEX = {
@@ -315,7 +257,10 @@
     btn.className = `color-reveal-btn crb-${color}`;
     btn.dataset.color = color;
     btn.disabled = true;
-    btn.innerHTML = `${color}<span class="crb-bets" id="rb-${color}">0 bets</span>`;
+    btn.innerHTML = `
+      ${color}
+      <span class="crb-info" id="rb-${color}">0 bets · ₱0</span>
+    `;
     btn.onclick = () => selectRevealColor(color);
     revealGrid.appendChild(btn);
   });
@@ -327,10 +272,7 @@
       setConn(true);
     };
     ws.onmessage = e => handleMsg(JSON.parse(e.data));
-    ws.onclose = () => {
-      setConn(false);
-      setTimeout(connect, 2000);
-    };
+    ws.onclose = () => { setConn(false); setTimeout(connect, 2000); };
     ws.onerror = () => ws.close();
   }
 
@@ -343,66 +285,103 @@
     switch(msg.type) {
       case 'state':
         gameState = msg;
-        betCounts = msg.betCounts || {};
         applyState(msg);
         break;
       case 'countdown':
         document.getElementById('statCountdown').textContent = msg.value + 's';
-        const cd = document.getElementById('statCountdown');
-        cd.style.color = msg.value <= 5 ? 'var(--accent)' : 'var(--gold)';
+        document.getElementById('statCountdown').style.color = msg.value <= 5 ? 'var(--accent)' : 'var(--gold)';
         break;
       case 'phaseChange':
         updatePhaseUI(msg.phase, msg.round);
         break;
+      case 'reveal':
+        applyRevealResult(msg);
+        break;
       case 'reset':
-        showToast('Game reset.', 'info');
+        showToast('Players reset to ₱1,000.', 'info');
+        setBankerBalance(msg.bankerBalance);
+        break;
+      case 'fullReset':
+        showToast('Full reset! New session started.', 'info');
+        setBankerBalance(msg.bankerBalance);
         break;
       case 'joined':
-        showToast('Banker connected ✓', 'success');
+        showToast('Banker panel connected ✓', 'success');
+        break;
+      case 'error':
+        showToast(msg.msg, 'error');
+        break;
+      case 'info':
+        showToast(msg.msg, 'success');
         break;
     }
   }
 
+  function applyRevealResult(msg) {
+    const change = msg.bankerChange || 0;
+    setBankerBalance(msg.bankerBalance, change);
+    const changeEl = document.getElementById('bankerChangeLabel');
+    if (change > 0) {
+      changeEl.textContent = `▲ +₱${change.toLocaleString()} this round`;
+      changeEl.style.color = 'var(--teal)';
+    } else if (change < 0) {
+      changeEl.textContent = `▼ −₱${Math.abs(change).toLocaleString()} this round`;
+      changeEl.style.color = 'var(--accent)';
+    } else {
+      changeEl.textContent = 'No change this round';
+      changeEl.style.color = 'var(--muted)';
+    }
+    const sign = change >= 0 ? '+' : '';
+    showToast(`Round done! Banker: ${sign}₱${change.toLocaleString()} | Total Pot: ₱${(msg.totalPot||0).toLocaleString()}`, change >= 0 ? 'success' : 'error');
+  }
+
+  function setBankerBalance(bal, change) {
+    if (bal !== undefined) {
+      lastBankerBalance = bal;
+      document.getElementById('statBankerBal').textContent = '₱' + bal.toLocaleString();
+      document.getElementById('sidebarBankerBal').textContent = '₱' + bal.toLocaleString();
+    }
+  }
+
   function applyState(state) {
-    const players = (state.players || []).filter(p => p.id !== 'banker');
+    const players = (state.players || []).filter(p => p.role !== 'banker');
     const betsCount = players.filter(p => p.hasBet).length;
-    const pot = Object.entries(state.betCounts || {}).reduce((s, [c, count]) => {
-      // We don't have per-color amounts in state, but we track counts
-      return s;
-    }, 0);
 
     document.getElementById('statPlayers').textContent = players.length;
     document.getElementById('statBets').textContent = betsCount;
+    document.getElementById('statPot').textContent = '₱' + (state.totalPot || 0).toLocaleString();
+    setBankerBalance(state.bankerBalance);
 
-    if (state.round > 0) {
-      document.getElementById('roundLabel').textContent = `Round ${state.round}`;
-    }
+    if (state.round > 0) document.getElementById('roundLabel').textContent = `Round ${state.round}`;
 
-    // Update bet counts on reveal buttons
+    // Update bet info on reveal buttons
     COLORS.forEach(c => {
       const cnt = (state.betCounts || {})[c] || 0;
+      const amt = (state.betAmounts || {})[c] || 0;
       const el = document.getElementById('rb-' + c);
-      if (el) el.textContent = cnt + ' bet' + (cnt !== 1 ? 's' : '');
+      if (el) el.textContent = `${cnt} bet${cnt !== 1 ? 's' : ''} · ₱${amt.toLocaleString()}`;
     });
 
     // Bet distribution bars
     const dist = document.getElementById('betDistribution');
-    const totalBets = Object.values(state.betCounts || {}).reduce((a,b) => a+b, 0);
+    const totalBetAmt = Object.values(state.betAmounts || {}).reduce((a, b) => a + b, 0);
     dist.innerHTML = '';
     COLORS.forEach(c => {
       const cnt = (state.betCounts || {})[c] || 0;
-      const pct = totalBets > 0 ? Math.round((cnt / totalBets) * 100) : 0;
+      const amt = (state.betAmounts || {})[c] || 0;
+      const pct = totalBetAmt > 0 ? Math.round((amt / totalBetAmt) * 100) : 0;
       const row = document.createElement('div');
+      row.className = 'dist-row';
       row.innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;font-size:0.8rem">
+        <div class="dist-label">
           <span style="display:flex;align-items:center;gap:0.4rem">
-            <span style="width:10px;height:10px;border-radius:50%;background:${COLOR_HEX[c]};display:inline-block"></span>
+            <span style="width:10px;height:10px;border-radius:50%;background:${COLOR_HEX[c]};flex-shrink:0;display:inline-block"></span>
             ${c}
           </span>
-          <span style="color:var(--muted)">${cnt} (${pct}%)</span>
+          <span style="color:var(--muted)">${cnt} bet${cnt!==1?'s':''} · ₱${amt.toLocaleString()} (${pct}%)</span>
         </div>
-        <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:0.6rem">
-          <div style="height:100%;width:${pct}%;background:${COLOR_HEX[c]};border-radius:3px;transition:width 0.4s"></div>
+        <div class="dist-bar-bg">
+          <div class="dist-bar-fill" style="width:${pct}%;background:${COLOR_HEX[c]}"></div>
         </div>
       `;
       dist.appendChild(row);
@@ -417,8 +396,8 @@
       div.innerHTML = `
         <span class="pname">${escHtml(p.name)}</span>
         <span class="pbal">₱${(p.balance||0).toLocaleString()}</span>
-        <span class="pbet-tag ${p.hasBet ? 'visible' : ''}">BET</span>
-        <button class="add-bal-btn" onclick="addBalance('${p.id}', 500)">+₱500</button>
+        <span class="pbet-tag ${p.hasBet ? 'visible' : ''}">${p.betColor ? p.betColor : 'BET'}</span>
+        <button class="add-bal-btn" onclick="addBalance('${p.id}', 200)">+₱200</button>
       `;
       list.appendChild(div);
     });
@@ -429,11 +408,13 @@
     (state.history || []).slice().reverse().forEach(h => {
       const div = document.createElement('div');
       div.className = 'hist-item';
+      const ch = h.bankerChange || 0;
       div.innerHTML = `
         <div class="hist-dot ${h.winner}"></div>
-        <span>Round ${h.round}</span>
+        <span>R${h.round}</span>
         <span style="color:${COLOR_HEX[h.winner]};font-weight:600">${h.winner}</span>
-        <span style="color:var(--muted)">₱${h.totalPot}</span>
+        <span style="color:var(--muted)">₱${(h.totalPot||0).toLocaleString()}</span>
+        <span class="hist-change ${ch >= 0 ? 'pos' : 'neg'}">${ch >= 0 ? '+' : ''}₱${ch.toLocaleString()}</span>
       `;
       hist.appendChild(div);
     });
@@ -443,27 +424,35 @@
 
   function updatePhaseUI(phase, round) {
     const ind = document.getElementById('phaseIndicator');
-    const startBtn = document.getElementById('startBettingBtn');
-    const revealBtn = document.getElementById('revealBtn');
+    const startBtn   = document.getElementById('startBettingBtn');
+    const closeBtn   = document.getElementById('closeBettingBtn');
+    const revealBtn  = document.getElementById('revealBtn');
 
-    document.querySelectorAll('.color-reveal-btn').forEach(b => b.disabled = true);
+    document.querySelectorAll('.color-reveal-btn').forEach(b => { b.disabled = true; b.classList.remove('selected'); });
 
     ind.className = 'phase-indicator pi-' + phase;
-    const labels = { waiting:'Waiting', betting:'Betting Open', closed:'Bets Closed', result:'Results' };
+    const labels = { waiting:'Waiting', betting:'Betting Open', closed:'Bets Closed', reveal:'Revealing', result:'Results' };
     ind.textContent = labels[phase] || phase;
 
     if (phase === 'waiting' || phase === 'result') {
       startBtn.disabled = false;
+      closeBtn.disabled = true;
       revealBtn.disabled = true;
       document.getElementById('statCountdown').textContent = '—';
     } else if (phase === 'betting') {
       startBtn.disabled = true;
+      closeBtn.disabled = false;
       revealBtn.disabled = true;
     } else if (phase === 'closed') {
       startBtn.disabled = true;
-      revealBtn.disabled = selectedRevealColor === null;
+      closeBtn.disabled = true;
+      revealBtn.disabled = (selectedRevealColor === null);
       document.querySelectorAll('.color-reveal-btn').forEach(b => b.disabled = false);
       document.getElementById('statCountdown').textContent = '—';
+    } else if (phase === 'reveal') {
+      startBtn.disabled = true;
+      closeBtn.disabled = true;
+      revealBtn.disabled = true;
     }
   }
 
@@ -478,9 +467,14 @@
   function startBetting() {
     const seconds = parseInt(document.getElementById('timerSelect').value);
     selectedRevealColor = null;
-    document.querySelectorAll('.color-reveal-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('bankerChangeLabel').textContent = '';
     ws.send(JSON.stringify({ type: 'startBetting', seconds }));
     showToast(`Betting started! ${seconds}s timer.`, 'success');
+  }
+
+  function closeBetting() {
+    if (!confirm('Close betting early?')) return;
+    ws.send(JSON.stringify({ type: 'closeBetting' }));
   }
 
   function revealColor() {
@@ -493,15 +487,22 @@
   }
 
   function resetGame() {
-    if (!confirm('Reset the game? All balances will return to ₱1,000.')) return;
+    if (!confirm('Reset all player balances to ₱1,000? Banker keeps current balance.')) return;
     ws.send(JSON.stringify({ type: 'resetGame' }));
     selectedRevealColor = null;
     document.querySelectorAll('.color-reveal-btn').forEach(b => b.classList.remove('selected'));
   }
 
+  function fullReset() {
+    if (!confirm('Full reset: ALL balances back to start (Banker ₱10,000 / Players ₱1,000)? This clears all history.')) return;
+    ws.send(JSON.stringify({ type: 'fullReset' }));
+    selectedRevealColor = null;
+    document.getElementById('bankerChangeLabel').textContent = '';
+    document.querySelectorAll('.color-reveal-btn').forEach(b => b.classList.remove('selected'));
+  }
+
   function addBalance(targetId, amount) {
     ws.send(JSON.stringify({ type: 'addBalance', targetId, amount }));
-    showToast(`Added ₱${amount} to player`, 'success');
   }
 
   function showToast(msg, type='info') {
@@ -509,7 +510,7 @@
     t.textContent = msg;
     t.className = 'toast ' + type + ' show';
     clearTimeout(t._timeout);
-    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 4000);
   }
 
   function escHtml(s) {
