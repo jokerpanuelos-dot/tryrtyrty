@@ -1924,23 +1924,6 @@ window.addEventListener('error', function(e) {
   }
 });
 
-// Override multiplayer functions if Firebase not configured
-const _origCreate = window.createRoom;
-window.createRoom = function() {
-  if (typeof firebase === 'undefined' || FIREBASE_CONFIG.apiKey === 'AIzaSyDemo_Replace_With_Your_Key') {
-    showToast('⚠️ Firebase not configured! See index.html comments. Bot mode works now!', 'error');
-    return;
-  }
-  _origCreate();
-};
-const _origJoin = window.joinAsPlayer;
-window.joinAsPlayer = function() {
-  if (typeof firebase === 'undefined' || FIREBASE_CONFIG.apiKey === 'AIzaSyDemo_Replace_With_Your_Key') {
-    showToast('⚠️ Firebase not configured! Try Bot Mode instead.', 'error');
-    return;
-  }
-  _origJoin();
-};
 </script>
 
 </body>
