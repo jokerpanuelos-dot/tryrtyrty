@@ -708,7 +708,7 @@ let botCountdownVal = 0;
 function initFirebase() {
   if (db) return;
   try {
-    firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.initializeApp(firebaseConfig);
     db = firebase.database();
   } catch(e) {
     // Already initialized
